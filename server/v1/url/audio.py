@@ -1,10 +1,8 @@
-# v1/url/info.py
-from fastapi import APIRouter
-from yt_dlp import YoutubeDL
-from fastapi import HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi.responses import JSONResponse, FileResponse
 from pydantic import BaseModel
-from fastapi.responses import StreamingResponse
-import io
+import os
+import yt_dlp as youtube_dl
 
 router = APIRouter()
 
@@ -12,52 +10,30 @@ class URLRequest(BaseModel):
     url: str
 
 @router.post("/url/audio")
-async def url_download(data: URLRequest):
+async def download_audio(data: URLRequest):
     url_str = data.url
     try:
         print(f"Received URL: {url_str}")
 
-        # Create an in-memory buffer
-        buffer = io.BytesIO()
-
-        # Set up yt-dlp options
         ydl_opts = {
-            'format': 'bestaudio/best',  # Get the best audio format
+            'format': 'bestaudio/best',
+            'outtmpl': '%(title)s.%(ext)s',
             'postprocessors': [{
-                'key': 'FFmpegExtractAudio',  # Extract audio using ffmpeg
-                'preferredcodec': 'mp3',  # Convert to mp3
-                'preferredquality': '192',  # Set quality
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
             }],
-            # 'outtmpl': '-',  # Output to stdout
-            # 'quiet': False,  # Show detailed logs
         }
 
-        # print("yt-dlp options set:", ydl_opts)
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url_str, download=True)
+            # print(f"Downloaded audio info: {info_dict}")
+            new_file = ydl.prepare_filename(info_dict).replace(info_dict['ext'], 'mp3')
+            print(f"Renamed file to: {new_file}")
 
-        def write_to_buffer(info_dict, audio_stream):
-            print("Writing to buffer...")
-            buffer.write(audio_stream.read())
-            print("Finished writing to buffer.")
-
-        # with YoutubeDL(ydl_opts) as ydl:
-        #     print("Starting yt-dlp download...")
-        #     # Download the audio and write to the buffer
-        #     info_dict = ydl.extract_info(url_str, download=True)
-        #     print("Download complete.")
-        
-        # Check buffer content length
-        buffer.seek(0)
-        buffer_length = len(buffer.getvalue())
-        # print(f"Buffer size: {buffer_length} bytes")
-
-        return StreamingResponse(
-            buffer, 
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": "attachment; filename=downloaded_audio.mp3"}
-        )
+        # Send the audio file as a response
+        return FileResponse(new_file, media_type='audio/mpeg', filename=os.path.basename(new_file))
 
     except Exception as e:
-        print(f"Error occurred: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"An error occurred: {str(e)}"
-        ) from e
+        print(f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
