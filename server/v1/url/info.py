@@ -39,14 +39,14 @@ async def get_url_info(data: dict):
                         f"https://www.youtube.com/watch?v={entry.get('id')}"
                     )
                     video_info = {
+                        "originalUrl": video_url,
                         "title": entry.get("title"),
                         "duration": entry.get("duration"),
                         "channel": entry.get("uploader"),
                         "thumbnail": entry.get("thumbnail"),
-                        "url": video_url,
                     }
                     video_info_list.append(video_info)
-                return {"videos": video_info_list}
+                return {"type": "playlist", "videos": video_info_list}
             else:
                 raise HTTPException(
                     status_code=404, detail="No entries found in the playlist"
@@ -55,17 +55,18 @@ async def get_url_info(data: dict):
         elif "watch?v=" in url_str:
             print("enter else")
             youtube = YouTube(url_str)
-            return {
+            video_info = {
                 "originalUrl": url_str,
                 "title": youtube.title,
                 "channel": youtube.author,
                 "duration": youtube.length,
                 "thumbnail": youtube.thumbnail_url,
             }
+            return {"type": "single", "videos": video_info}
         else:
             raise HTTPException(
                 status_code=400,
-                detail="The provided URL does not point to a playlist.",
+                detail="The provided URL does not point to a playlist or a video.",
             )
     except Exception as e:
         print(f"An error occurred: {e}")

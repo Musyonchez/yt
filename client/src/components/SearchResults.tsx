@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import formatDuration from "../utils/formatDuration";
 import axios from "axios";
 import WaveLoader from "@/utils/WaveLoader";
 import CircleLoader from "@/utils/CircleLoader";
+import logo from "../../public/images/black-logo.png";
 
 interface VideoInfo {
   originalUrl: string;
@@ -13,8 +14,31 @@ interface VideoInfo {
   thumbnail: string;
 }
 
-const SearchResults = ({ response }: { response: VideoInfo }) => {
+const SearchResults = ({ response }: { response: { type: string, videos: VideoInfo[] } }) => {
   const [downloadInProgress, setDownloadInProgress] = useState(false);
+
+  const [thumbnails, setThumbnails] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const fetchThumbnails = async () => {
+      const videoUrls = response.videos.map(video => video.originalUrl);
+      const thumbnailPromises = videoUrls.map(url =>
+        axios.post(`http://127.0.0.1:8000/api/v1/url/thumbnail`, { url })
+          .then(res => res.data)
+          .catch(err => console.error('Failed to fetch thumbnail:', err))
+      );
+
+      const fetchedThumbnails = await Promise.all(thumbnailPromises);
+      const thumbnailMap = fetchedThumbnails.reduce((acc, curr, idx) => {
+        acc[videoUrls[idx]] = curr;
+        return acc;
+      }, {});
+
+      setThumbnails(thumbnailMap);
+    };
+
+    fetchThumbnails();
+  }, [response]);
 
   const handleDownload = async (searchInput: string) => {
     try {
@@ -53,35 +77,37 @@ const SearchResults = ({ response }: { response: VideoInfo }) => {
   };
 
   return (
-    <div className=" flex flex-col w-full justify-center items-center px-7">
-      <div className=" bg-white p-5 w-fit flex flex-col rounded-3xl space-y-3">
-        <h2 className=" text-2xl font-bold w-full text-center">
-          {response.channel}-{response.title}
-        </h2>
-        <div className=" flex justify-around items-center">
-          <Image
-            src={response.thumbnail}
-            alt={response.title}
-            width={150} // Example width
-            height={150} // Example height
-            className=" rounded-md"
-          />
-          <div className=" px-5 space-y-2">
-            <p className=" text-xl">
-              Duration: {formatDuration(response.duration)}
-            </p>
-            <div className=" flex justify-center items-center">
-              <button
-                className=" bg-[#a63187] px-9 py-3 rounded-xl flex items-center space-x-2"
-                onClick={() => handleDownload(response.originalUrl)}
-              >
-                <p>Download</p>
-                {downloadInProgress ? <CircleLoader /> : null}
-              </button>
+    <div className="flex flex-wrap justify-center gap-4">
+      {response.videos.map((video, index) => (
+        <div key={index} className="bg-white p-5 w-fit flex flex-col rounded-3xl space-y-3">
+          <h2 className="text-2xl font-bold w-full text-center">
+            {video.channel}-{video.title}
+          </h2>
+          <div className="flex justify-around items-center">
+            <Image
+              src={video.thumbnail || (thumbnails[video.originalUrl] || logo)} // Use fetched thumbnail if available, otherwise fall back to logo
+              alt={video.title}
+              width={150} // Example width
+              height={150} // Example height
+              className="rounded-md"
+            />
+            <div className="px-5 space-y-2">
+              <p className="text-xl">
+                Duration: {formatDuration(video.duration)}
+              </p>
+              <div className="flex justify-center items-center">
+                <button
+                  className="bg-[#a63187] px-9 py-3 rounded-xl flex items-center space-x-2"
+                  onClick={() => handleDownload(video.originalUrl)}
+                >
+                  <p>Download</p>
+                  {downloadInProgress ? <CircleLoader /> : null}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ))}
     </div>
   );
 };
