@@ -1,6 +1,4 @@
-import asyncio
 from fastapi import APIRouter, HTTPException
-import subprocess
 from pytube import YouTube
 from yt_dlp import YoutubeDL
 
@@ -21,18 +19,38 @@ async def get_url_info(data: dict):
         if "&list=" in url_str:
             print("enter if")
             ydl_opts = {
-                'extract_flat': True,  # Extract information without downloading
-                'playlistend': 10,     # Only fetch the first 10 videos
+                "extract_flat": "in_playlist",  # Extract flat information for playlists only
+                "playlistend": 100,  # Limit to the first 10 videos
+                "quiet": True,  # Suppresses unnecessary output
+                "skip_download": True,  # Ensure no download happens
+                "simulate": True,  # Simulate the download to get metadata only
+                "force_generic_extractor": True,
+                "no_warnings": True,
             }
 
             with YoutubeDL(ydl_opts) as ydl:
                 info_dict = ydl.extract_info(url_str, download=False)
 
-            if 'entries' in info_dict:
-                titles = [entry['title'] for entry in info_dict['entries'][:10]]
-                return {"titles": titles}
+            if "entries" in info_dict:
+                print("enter if")
+                video_info_list = []
+                for entry in info_dict["entries"][:10]:
+                    video_url = (
+                        f"https://www.youtube.com/watch?v={entry.get('id')}"
+                    )
+                    video_info = {
+                        "title": entry.get("title"),
+                        "duration": entry.get("duration"),
+                        "channel": entry.get("uploader"),
+                        "thumbnail": entry.get("thumbnail"),
+                        "url": video_url,
+                    }
+                    video_info_list.append(video_info)
+                return {"videos": video_info_list}
             else:
-                raise HTTPException(status_code=404, detail="No entries found in the playlist")
+                raise HTTPException(
+                    status_code=404, detail="No entries found in the playlist"
+                )
 
         elif "watch?v=" in url_str:
             print("enter else")
@@ -52,18 +70,3 @@ async def get_url_info(data: dict):
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
-
-
-async def run_async_command(command: str) -> list[str]:
-    """
-    Runs a shell command asynchronously and returns its output.
-    """
-    process = await asyncio.create_subprocess_shell(
-        command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await process.communicate()
-    if process.returncode != 0:
-        raise Exception(f"Command failed with error {stderr.decode()}")
-    return stdout.decode().strip().split("\n")
