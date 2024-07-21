@@ -21,6 +21,7 @@ const SearchResults = ({ response }: { response: { type: string, videos: VideoIn
 
   useEffect(() => {
     const fetchThumbnails = async () => {
+      if (!response?.videos) return; // Early return if videos are not available
       const videoUrls = response.videos.map(video => video.originalUrl);
       const thumbnailPromises = videoUrls.map(url =>
         axios.post(`http://127.0.0.1:8000/api/v1/url/thumbnail`, { url })
@@ -78,7 +79,7 @@ const SearchResults = ({ response }: { response: { type: string, videos: VideoIn
 
   return (
     <div className="flex flex-wrap justify-center gap-4">
-      {response.videos.map((video, index) => (
+      {response?.videos?.map((video, index) => (
         <div key={index} className="bg-white p-5 w-fit flex flex-col rounded-3xl space-y-3">
           <h2 className="text-2xl font-bold w-full text-center">
             {video.channel}-{video.title}

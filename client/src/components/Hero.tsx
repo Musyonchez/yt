@@ -6,36 +6,39 @@ import SearchResults from "./SearchResults";
 import sanitizeSearch from "../utils/sanitizeSearch";
 import WaveLoader from "@/utils/WaveLoader";
 
-// Define the handleSearch function using useState to manage the input value
 const Hero = () => {
   const [searchInput, setSearchInput] = useState("");
   const [response, setResponse] = useState(null);
   const [loader, setLoader] = useState(false);
 
-  // Update the searchInput state whenever the input changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value);
   };
 
-  // Perform the search action when the button is clicked
   const handleSearch = async () => {
-    console.log("Searching for:", searchInput); // Replace this with actual search logic
+    console.log("Searching for:", searchInput);
     try {
-      setLoader(true)
-      // Replace 'yourUrlString' with the actual URL string you want to send
-      // const searchInput = "https://www.youtube.com/watch?v=QjihRb2E-YA";
+      setLoader(true);
       const sanitizedText = sanitizeSearch({ searchInput });
-      console.log("sanitizedText:", sanitizedText); // Replace this with actual search logic
-      if (sanitizedText === "youtubelink") {
+      console.log("sanitizedText:", sanitizedText);
+      if (sanitizedText === "single video youtube link") {
         const response = await axios.post(
-          "http://127.0.0.1:8000/api/v1/url/info",
+          "http://127.0.0.1:8000/api/v1/url/info/single",
           {
             url: searchInput,
           }
         );
         console.log(response.data);
-        setResponse(response.data); // Update the state with the response data
-        setLoader(false)
+        setResponse(response.data);
+      } else if (sanitizedText === "single video youtube link in a playlist") {
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/v1/url/info/playlist",
+          {
+            url: searchInput,
+          }
+        );
+        console.log(response.data);
+        setResponse(response.data);
       } else if (sanitizedText === "textsearch") {
         console.log("word search", sanitizedText);
       } else {
@@ -43,6 +46,8 @@ const Hero = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -53,8 +58,8 @@ const Hero = () => {
           type="text"
           className="border-2 w-96 h-11 px-1"
           placeholder="Enter a name (song or artist) or URL (video or playlist)"
-          value={searchInput} // Bind the input value to the searchInput state
-          onChange={handleInputChange} // Handle input changes
+          value={searchInput}
+          onChange={handleInputChange}
           required
         />
         <button className="px-3" onClick={handleSearch}>

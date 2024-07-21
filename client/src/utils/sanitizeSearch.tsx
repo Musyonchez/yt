@@ -11,13 +11,22 @@ const sanitizeSearch = ({ searchInput }: SearchInfo) => {
   if (searchInput.startsWith("https://www.youtube.com/")) {
     // Logic for when searchInput starts with "https://www.youtube.com/"
     console.log("YouTube link detected");
-    // You might want to handle YouTube links differently here
-    return ("youtubelink");
+    if (searchInput.includes("?v=")) {
+      if (searchInput.includes("&list=") && searchInput.includes("&index=")) {
+        return "single video youtube link in a playlist";
+      } else if (searchInput.includes("&list=")) {
+        return "playlist youtube link";
+      } else {
+        return "single video youtube link";
+      }
+    } else {
+      return "unsupported youtube link";
+    }
   } else {
     // Logic for other cases
     console.log("Not a YouTube link");
     // Handle other cases as needed
-    return ("textsearch");
+    return "textsearch";
   }
 };
 
