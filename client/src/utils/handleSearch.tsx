@@ -36,7 +36,7 @@ const handleSearch = async (
     console.log("sanitizedText:", sanitizedText);
     if (sanitizedText === "single video youtube link") {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/v1/url/info/single",
+        "https://yt-ojvw.onrender.com/api/v1/url/info/single",
         {
           url: searchInput,
         }

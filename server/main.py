@@ -16,6 +16,7 @@ origins = [
     "http://localhost:3000/test",
     "http://localhost:3001",  # Adjust this to match the origins you want to allow
     "http://localhost:3001/test",
+    "https://mp3ninja.vercel.app",
 ]
 
 app.add_middleware(
