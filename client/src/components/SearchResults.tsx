@@ -17,29 +17,8 @@ interface VideoInfo {
 const SearchResults = ({ response }: { response: { type: string, videos: VideoInfo[] } }) => {
   const [downloadInProgress, setDownloadInProgress] = useState(false);
 
-  const [thumbnails, setThumbnails] = useState<{ [key: string]: string }>({});
 
-  useEffect(() => {
-    const fetchThumbnails = async () => {
-      if (!response?.videos) return; // Early return if videos are not available
-      const videoUrls = response.videos.map(video => video.originalUrl);
-      const thumbnailPromises = videoUrls.map(url =>
-        axios.post(`http://127.0.0.1:8000/api/v1/url/thumbnail`, { url })
-          .then(res => res.data)
-          .catch(err => console.error('Failed to fetch thumbnail:', err))
-      );
 
-      const fetchedThumbnails = await Promise.all(thumbnailPromises);
-      const thumbnailMap = fetchedThumbnails.reduce((acc, curr, idx) => {
-        acc[videoUrls[idx]] = curr;
-        return acc;
-      }, {});
-
-      setThumbnails(thumbnailMap);
-    };
-
-    fetchThumbnails();
-  }, [response]);
 
   const handleDownload = async (searchInput: string) => {
     try {
@@ -86,7 +65,7 @@ const SearchResults = ({ response }: { response: { type: string, videos: VideoIn
           </h2>
           <div className="flex justify-around items-center">
             <Image
-              src={video.thumbnail || (thumbnails[video.originalUrl] || logo)} // Use fetched thumbnail if available, otherwise fall back to logo
+              src={video.thumbnail || logo} // Use fetched thumbnail if available, otherwise fall back to logo
               alt={video.title}
               width={150} // Example width
               height={150} // Example height

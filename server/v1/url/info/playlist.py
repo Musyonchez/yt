@@ -39,10 +39,6 @@ async def get_url_info(data: dict):
                     )
                     video_info = {
                         "originalUrl": video_url,
-                        "title": entry.get("title"),
-                        "duration": entry.get("duration"),
-                        "channel": entry.get("uploader"),
-                        "thumbnail": entry.get("thumbnail"),
                     }
                     video_info_list.append(video_info)
                 return {"type": "playlist", "videos": video_info_list}
