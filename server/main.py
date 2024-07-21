@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from v1.url.hthyth import router as InfoRouter
 from v1.url.info.single import router as SingleInfoRouter
 from v1.url.info.playlist import router as PlaylistInfoRouter
-from v1.url.thumbnail import router as ThumbnailRouter
 from v1.url.audio import router as AudioRouter
 
 app = FastAPI()
@@ -33,7 +32,6 @@ app.add_middleware(
 app.include_router(InfoRouter, prefix="/api/v1")
 app.include_router(SingleInfoRouter, prefix="/api/v1")
 app.include_router(PlaylistInfoRouter, prefix="/api/v1")
-app.include_router(ThumbnailRouter, prefix="/api/v1")
 app.include_router(AudioRouter, prefix="/api/v1")
 
 

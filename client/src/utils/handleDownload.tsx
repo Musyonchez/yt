@@ -12,16 +12,14 @@ const handleDownload = async (
         url: searchInput,
       },
       {
-        responseType: "arraybuffer", // Ensure the response is in binary format
+        responseType: "blob", // Ensure the response is a Blob
       }
     );
 
-    // Convert the response data (arraybuffer) to a Blob
-    const blob = new Blob([response.data], { type: "audio/mpeg" });
     // Create a link element
     const link = document.createElement("a");
     // Create a URL for the Blob and set it as the href attribute
-    link.href = window.URL.createObjectURL(blob);
+    link.href = window.URL.createObjectURL(new Blob([response.data], { type: "audio/mpeg" }));
     // Set the download attribute with a filename
     link.download = "downloaded_audio.mp3";
     // Append the link to the body
@@ -34,7 +32,6 @@ const handleDownload = async (
     console.log("MP3 file downloaded successfully!");
   } catch (error) {
     setDownloadInProgress(false);
-
     console.error("Error downloading or saving the MP3 file:", error);
   }
 };
