@@ -41,7 +41,7 @@ const handleSearch = async (
       (sanitizedText as string) === "single video youtube link in a playlist"
     ) {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/v1/url/info/single",
+        "https://yt-ojvw.onrender.com/api/v1/url/info/single",
         {
           url: searchInput,
         }
@@ -50,7 +50,7 @@ const handleSearch = async (
       setSingleResponse(response.data);
     } else if (sanitizedText === "playlist youtube link") {
       const playlistResponse = await axios.post(
-        "http://127.0.0.1:8000/api/v1/url/info/playlist",
+        "https://yt-ojvw.onrender.com/api/v1/url/info/playlist",
         {
           url: searchInput,
         }
@@ -65,7 +65,7 @@ const handleSearch = async (
 
       for (const url of videoUrls) {
         const videoDetailsPromise = axios.post(
-          "http://127.0.0.1:8000/api/v1/url/info/single",
+          "https://yt-ojvw.onrender.com/api/v1/url/info/single",
           {
             url: url,
           }
