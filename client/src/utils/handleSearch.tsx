@@ -36,7 +36,10 @@ const handleSearch = async (
     setPlaylistResponses([]);
     const sanitizedText = sanitizeSearch({ searchInput });
     console.log("sanitizedText:", sanitizedText);
-    if (sanitizedText === "single video youtube link") {
+    if (
+      (sanitizedText as string) === "single video youtube link" ||
+      (sanitizedText as string) === "single video youtube link in a playlist"
+    ) {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/v1/url/info/single",
         {
