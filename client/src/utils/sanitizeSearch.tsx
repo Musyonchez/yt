@@ -12,7 +12,11 @@ const sanitizeSearch = ({ searchInput }: SearchInfo) => {
     // Logic for when searchInput starts with "https://www.youtube.com/"
     console.log("YouTube link detected");
     if (searchInput.includes("?v=")) {
-      if (searchInput.includes("&list=") && searchInput.includes("&index=")) {
+      if (
+        searchInput.includes("&list=") &&
+        (searchInput.includes("&index=") ||
+          searchInput.includes("&start_radio"))
+      ) {
         return "single video youtube link in a playlist";
       } else if (searchInput.includes("&list=")) {
         return "playlist youtube link";

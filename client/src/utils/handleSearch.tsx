@@ -32,11 +32,13 @@ const handleSearch = async (
   console.log("Searching for:", searchInput);
   try {
     setLoader(true);
+    setSingleResponse(null);
+    setPlaylistResponses([]);
     const sanitizedText = sanitizeSearch({ searchInput });
     console.log("sanitizedText:", sanitizedText);
     if (sanitizedText === "single video youtube link") {
       const response = await axios.post(
-        "https://yt-ojvw.onrender.com/api/v1/url/info/single",
+        "http://127.0.0.1:8000/api/v1/url/info/single",
         {
           url: searchInput,
         }
