@@ -30,12 +30,13 @@ async def download_audio(data: URLRequest):
             info_dict = ydl.extract_info(url_str, download=True)
             filename = ydl.prepare_filename(info_dict).replace(info_dict['ext'], 'mp3')
 
-            # Send the audio file as a response
-            response = FileResponse(filename, media_type='audio/mpeg', filename=os.path.basename(filename))
-            
-            # No need for a background task; file will be deleted normally
-            return response
-
+            return FileResponse(
+                filename,
+                media_type='audio/mpeg',
+                filename=os.path.basename(filename),
+            )
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"An error occurred: {str(e)}"
+        ) from e
