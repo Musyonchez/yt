@@ -27,12 +27,12 @@ const SearchResults = ({
       {response?.videos?.map((video, index) => (
         <div
           key={index}
-          className="bg-white p-5 w-full flex flex-col rounded-3xl space-y-3"
+          className="bg-white p-2 sm:p-5 w-full flex flex-col rounded-3xl space-y-3"
         >
           <h2 className="text-2xl font-bold w-full text-center">
             {video.channel}-{video.title}
           </h2>
-          <div className="flex justify-around items-center">
+          <div className="flex sm:justify-around items-center pr-2">
             <Image
               src={video.thumbnail || logo} // Use fetched thumbnail if available, otherwise fall back to logo
               alt={video.title}
