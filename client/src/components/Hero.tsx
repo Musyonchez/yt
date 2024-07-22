@@ -43,18 +43,18 @@ const Hero = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center w-full space-y-10">
-      <div className="border-8 border-purple-200 rounded-lg w-fit mt-10">
+    <div className="flex flex-col justify-center items-center w-full space-y-10 px-2">
+      <div className="border-8 border-purple-200 rounded-lg w-full sm:w-fit mt-10 flex flex-col sm:flex-row">
         <input
           type="text"
-          className="border-2 w-96 h-11 px-1"
+          className="border-2 w-full sm:w-96 h-11 px-1 max-sm:text-center"
           placeholder="Enter a name (song or artist) or URL (video or playlist)"
           value={searchInput}
           onChange={handleInputChange}
           required
         />
         <button
-          className="px-3"
+          className="px-3 max-sm:py-1 w-full sm:w-fit"
           onClick={() =>
             handleSearch(
               searchInput,
