@@ -48,7 +48,12 @@ const SearchResults = ({
                 <button
                   className="bg-[#a63187] px-9 py-3 rounded-xl flex items-center space-x-2"
                   onClick={() =>
-                    handleDownload(video.originalUrl, setDownloadInProgress, video.channel, video.title)
+                    handleDownload(
+                      video.originalUrl,
+                      setDownloadInProgress,
+                      video.channel,
+                      video.title
+                    )
                   }
                 >
                   <p>Download</p>
