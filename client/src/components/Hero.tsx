@@ -48,7 +48,7 @@ const Hero = () => {
         <input
           type="text"
           className="border-2 w-full sm:w-96 h-11 px-1 max-sm:text-center"
-          placeholder="Enter a name (song or artist) or URL (video or playlist)"
+          placeholder="Enter a URL (video or playlist)"
           value={searchInput}
           onChange={handleInputChange}
           required
