@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playlist Info with Alpine.js</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: #f0f4f8;
+        color: #333;
+        padding: 2rem;
+        font-size: 16px;
+      }
+
+      h1 {
+        color: #2c3e50;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .playlist-input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s;
+      }
+
+      .playlist-input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+      }
+
+      .btn-primary {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: background-color 0.3s;
+      }
+
+      .btn-primary:hover {
+        background-color: #2980b9;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+      }
+
+      .loading.active {
+        display: block;
+      }
+
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 2s linear infinite;
+      }
+
+      .loader-container .loader {
+        margin: 10px auto 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Grid layout for playlist */
+      .playlist {
+        list-style-type: none;
+        padding: 0;
+        display: grid;
+        justify-content: space-between;
+        gap: 20px;
+        margin-top: 2rem;
+
+        /* Default grid layout */
+        grid-template-columns: repeat(1, 1fr);
+      }
+
+      /* Responsive grid layout */
+      @media (min-width: 600px) {
+        .playlist {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (min-width: 768px) {
+        .playlist {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .playlist {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+
+      .playlist li {
+        flex: 1 1 calc(33.33% - 20px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .playlist li:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .playlist img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+
+      .playlist p {
+        margin-bottom: 0.5rem;
+        color: #555;
+      }
+
+      .playlist a {
+        color: #3498db;
+        text-decoration: none;
+      }
+
+      .playlist a:hover {
+        text-decoration: underline;
+      }
+
+      .playlist button {
+        width: fit-content;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+      }
+
+      .playlist button:hover {
+        background-color: #2980b9;
+      }
+
+      .playlist button.disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .playlist button span {
+        margin-right: 10px;
+      }
+
+
+      .playlist .loader {
+        width: 20px;
+        height: 20px;
+      }
+
+    </style>
+  </head>
+  <body>
+    <h1>Playlist Information</h1>
+
+    <div x-data="playlistApp()" class="container">
+      <!-- Input field for playlist URL -->
+      <input
+        type="text"
+        placeholder="Enter playlist URL"
+        x-model="playlistUrl"
+        class="playlist-input"
+      />
+
+      <!-- Button to fetch playlist using the provided URL -->
+      <button
+        @click="fetchPlaylist"
+        class="btn-primary"
+        :disabled="!playlistUrl"
+      >
+        Fetch Playlist
+      </button>
+
+      <!-- Loading spinner -->
+      <div x-show="loading" class="loader-container">
+        <div class="loader"></div>
+      </div>
+
+      <!-- Playlist content -->
+      <ul x-show="videos.length > 0" class="playlist">
+        <template x-for="video in videos" :key="video.url">
+          <li>
+            <!-- Lazy load images -->
+            <img
+              :src="video.thumbnail"
+              alt="thumbnail"
+              width="120"
+              loading="lazy"
+            />
+            <p>
+              <strong>Title:</strong>
+              <a :href="video.url" target="_blank" x-text="video.title"></a>
+            </p>
+            <p>
+              <strong>Channel:</strong> <span x-text="video.channel"></span>
+            </p>
+            <p>
+              <strong>Duration:</strong>
+              <span x-text="video.duration"></span> seconds
+            </p>
+
+            <!-- Button to add to the list or show "ADDED" if already added -->
+            <button
+              @click="addToList(video.url)"
+              :disabled="isAdded(video.url)"
+              :class="{ 'disabled': isAdded(video.url) }"
+            >
+              <span
+                x-text="isAdded(video.url) ? 'ADDED' : 'ADD TO LIST'"
+              ></span>
+
+              <!-- Show loader only for the currently adding video -->
+              <div x-show="addingUrl === video.url">
+                <div class="loader"></div>
+              </div>
+            </button>
+          </li>
+        </template>
+      </ul>
+    </div>
+
+    <script>
+      function playlistApp() {
+        return {
+          playlistUrl: "", // Bind the playlist URL input
+          videos: [],
+          loading: false,
+          addingUrl: null, // Track the URL of the video being added
+          addedUrls: [], // Array to track URLs that have been added
+
+          fetchPlaylist() {
+            this.loading = true;
+
+            // Send the playlist URL in the request body as part of a POST request
+            fetch("http://127.0.0.1:8000/api/playlist/get_playlist/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ url: this.playlistUrl }), // Send the playlist URL in the request body
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                this.videos = data.videos; // Assuming the response contains videos array
+                this.loading = false;
+              })
+              .catch((error) => {
+                console.error("Error fetching playlist:", error);
+                this.loading = false;
+              });
+          },
+
+          addToList(url) {
+            this.addingUrl = url; // Set the URL of the video being added
+
+            // Get the current time in Nairobi timezone
+            const options = {
+              timeZone: "Africa/Nairobi",
+              hour12: false, // 24-hour format
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            };
+            const nairobiTime = new Intl.DateTimeFormat(
+              "en-GB",
+              options
+            ).format(new Date());
+
+            // Send POST request to add the video to the list with time
+            fetch("http://127.0.0.1:8000/api/playlist/add_url_to_list/", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                url: url, // Sending the video URL
+                added_at: nairobiTime, // Sending the current time in Nairobi
+              }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                // On success, add the URL to the addedUrls array
+                this.addedUrls.push(url);
+              })
+              .catch((error) => {
+                alert("Failed to add video.");
+              })
+              .finally(() => {
+                this.addingUrl = null; // Reset after the request is complete
+              });
+          },
+
+          // Check if the video is already added
+          isAdded(url) {
+            return this.addedUrls.includes(url);
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
