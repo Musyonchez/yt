@@ -7,5 +7,11 @@ static_router = APIRouter()
 
 
 @static_router.get("/")
-def read_root():
+def read_index():
     return FileResponse("static/index.html")
+
+
+@static_router.get("/name")
+def read_name():
+    return FileResponse("static/name.html")
+

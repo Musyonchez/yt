@@ -1,4 +1,7 @@
-# api/playlist/getPlaylist.py
+# api/playlist/get_name_playlist.py
+
+import json
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
 from yt_dlp import YoutubeDL
@@ -6,12 +9,12 @@ from yt_dlp import YoutubeDL
 # Create a router instance for playlist
 get_playlist_router = APIRouter()
 
+JSON_FILE_PATH = Path("store/playlist_urls.json")
 
-# Define a GET route for fetching playlist info
+
 @get_playlist_router.post("/")
 async def fetch_playlist(request: Request):
     try:
-        # Extract the URL from the request body
         data = await request.json()
         playlist_url = data.get("url")
 
@@ -20,8 +23,12 @@ async def fetch_playlist(request: Request):
 
         playlist_info = get_playlist_info(playlist_url)
 
-        # Return the list of videos from the playlist
-        return {"videos": playlist_info, "message": "Playlist fetched successfully"}
+        if isinstance(playlist_info, dict) and "error" in playlist_info:
+            raise HTTPException(status_code=500, detail=playlist_info["error"])
+
+        filtered_info = filter_already_added_videos(playlist_info)
+
+        return {"videos": filtered_info, "message": "Playlist fetched successfully"}
 
     except Exception as e:
         raise HTTPException(
@@ -31,29 +38,46 @@ async def fetch_playlist(request: Request):
 
 def get_playlist_info(playlist_url: str):
     ydl_opts = {
-        "extract_flat": "in_playlist",  # Extract flat information for playlists only
-        "playlistend": 200,  # Limit to the first 100 videos (you can adjust this)
-        "quiet": True,  # Suppress unnecessary output
-        "skip_download": True,  # Ensure no download happens
-        "simulate": True,  # Simulate the download to get metadata only
+        "extract_flat": "in_playlist",
+        "playlistend": 200,
+        "quiet": True,
+        "skip_download": True,
+        "simulate": True,
         "force_generic_extractor": True,
         "no_warnings": True,
     }
 
     with YoutubeDL(ydl_opts) as ydl:
         try:
-            # Extract playlist information
             info_dict = ydl.extract_info(playlist_url, download=False)
-
             return [
                 {
-                    "title": video["title"],
-                    "url": video["url"],
-                    "duration": video["duration"],
-                    "channel": video["channel"],
-                    "thumbnail": video["thumbnails"][0]["url"],
+                    "title": video.get("title"),
+                    "url": video.get("url"),
+                    "duration": video.get("duration"),
+                    "channel": video.get("channel"),
+                    "thumbnail": video.get("thumbnails", [{}])[0].get("url"),
                 }
                 for video in info_dict.get("entries", [])
+                if video and "url" in video
             ]
         except Exception as e:
             return {"error": str(e)}
+
+
+def filter_already_added_videos(playlist_info: list[dict]) -> list[dict]:
+    """Removes videos from playlist_info that already exist in playlist_urls.json"""
+    if not JSON_FILE_PATH.exists():
+        return playlist_info  # Nothing to filter
+
+    try:
+        with open(JSON_FILE_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            stored_urls = {entry["url"] for entry in data.get("urls", [])}
+
+        return [video for video in playlist_info if video["url"] not in stored_urls]
+
+    except Exception as e:
+        # If reading or parsing fails, return unfiltered as fallback
+        print(f"Error reading playlist_urls.json: {e}")
+        return playlist_info

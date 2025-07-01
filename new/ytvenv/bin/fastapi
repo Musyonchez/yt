@@ -1,4 +1,4 @@
-#!/home/musyonchez/Code/yt/new/ytvenv/bin/python3
+#!/home/musyonchez_arch/Code/yt/new/ytvenv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

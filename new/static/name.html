@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playlist Search by Name</title>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
+    <style>
+      /* Google Font */
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    
+      body {
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(to right, #1e3c72, #2a5298);
+        color: #fff;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem;
+      }
+    
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      }
+    
+      .container {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 700px;
+        width: 100%;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+    
+      .playlist-input {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        transition: background 0.3s ease;
+      }
+    
+      .playlist-input::placeholder {
+        color: #ddd;
+      }
+    
+      .playlist-input:focus {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    
+      .btn-primary {
+        display: inline-block;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+      }
+    
+      .btn-primary:hover {
+        background: linear-gradient(135deg, #0072ff, #00c6ff);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      }
+    
+      .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    
+      .loader-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+      }
+    
+      .loader {
+        border: 6px solid rgba(255, 255, 255, 0.3);
+        border-top: 6px solid #fff;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        animation: spin 1s linear infinite;
+      }
+    
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    
+      .playlist {
+        list-style: none;
+        padding: 0;
+        margin-top: 1rem;
+      }
+    
+      .playlist li {
+        background: rgba(255, 255, 255, 0.08);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 16px;
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 1rem;
+        align-items: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s ease;
+      }
+    
+      .playlist li:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    
+      .playlist img {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      }
+    
+      .playlist p {
+        margin: 0.25rem 0;
+      }
+    
+      .playlist a {
+        color: #00eaff;
+        text-decoration: none;
+      }
+    
+      .playlist a:hover {
+        text-decoration: underline;
+      }
+    
+      .playlist button {
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        font-weight: 600;
+        background-color: #10b981;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+    
+      .playlist button:hover {
+        background-color: #059669;
+        transform: scale(1.03);
+      }
+    
+      .playlist button.disabled {
+        background-color: #555;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    
+      .playlist button .loader {
+        width: 20px;
+        height: 20px;
+        margin-top: 5px;
+        border-width: 3px;
+      }
+    </style>
+    
+  </head>
+  <body>
+    <h1>Search by Name</h1>
+
+    <div x-data="namePlaylistApp()" class="container">
+      <!-- Input for playlist name -->
+      <input
+        type="text"
+        placeholder="Enter name"
+        x-model="playlistName"
+        class="playlist-input"
+      />
+
+      <!-- Button to search playlist by name -->
+      <button
+        @click="searchByName"
+        class="btn-primary"
+        :disabled="!playlistName"
+      >
+        Search name
+      </button>
+
+      <!-- Loading spinner -->
+      <div x-show="loading" class="loader-container">
+        <div class="loader"></div>
+      </div>
+
+      <!-- Playlist result -->
+      <ul x-show="videos.length > 0" class="playlist">
+        <template x-for="video in videos" :key="video.url">
+          <li>
+            <img
+              :src="video.thumbnail"
+              alt="thumbnail"
+              width="120"
+              loading="lazy"
+            />
+            <p>
+              <strong>Title:</strong>
+              <a :href="video.url" target="_blank" x-text="video.title"></a>
+            </p>
+            <p>
+              <strong>Channel:</strong> <span x-text="video.channel"></span>
+            </p>
+            <p>
+              <strong>Duration:</strong>
+              <span x-text="video.duration"></span> seconds
+            </p>
+
+            <button
+              @click="addToList(video.url)"
+              :disabled="isAdded(video.url)"
+              :class="{ 'disabled': isAdded(video.url) }"
+            >
+              <span
+                x-text="isAdded(video.url) ? 'ADDED' : 'ADD TO LIST'"
+              ></span>
+              <div x-show="addingUrl === video.url">
+                <div class="loader"></div>
+              </div>
+            </button>
+          </li>
+        </template>
+      </ul>
+    </div>
+
+    <script>
+      function namePlaylistApp() {
+        return {
+          playlistName: "",
+          videos: [],
+          loading: false,
+          addingUrl: null,
+          addedUrls: [],
+
+          searchByName() {
+            this.loading = true;
+
+            fetch("http://127.0.0.1:8000/api/playlist/get_name_playlist/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: this.playlistName }),
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log("Full response:", data);
+                this.videos = data.playlists || [];
+              })
+              .catch((error) => {
+                console.error("Error fetching playlist:", error);
+                alert("Failed to fetch playlist by name.");
+              })
+              .finally(() => {
+                this.loading = false;
+              });
+          },
+
+          addToList(url) {
+            this.addingUrl = url;
+
+            const options = {
+              timeZone: "Africa/Nairobi",
+              hour12: false,
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            };
+            const nairobiTime = new Intl.DateTimeFormat(
+              "en-GB",
+              options,
+            ).format(new Date());
+
+            fetch("http://127.0.0.1:8000/api/playlist/add_url_to_list/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                url: url,
+                added_at: nairobiTime,
+              }),
+            })
+              .then((response) => response.json())
+              .then(() => {
+                this.addedUrls.push(url);
+              })
+              .catch(() => {
+                alert("Failed to add video.");
+              })
+              .finally(() => {
+                this.addingUrl = null;
+              });
+          },
+
+          isAdded(url) {
+            return this.addedUrls.includes(url);
+          },
+        };
+      }
+    </script>
+  </body>
+</html>
