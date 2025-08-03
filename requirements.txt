@@ -1,0 +1,24 @@
+# Core Flask framework
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# YouTube downloading
+yt-dlp>=2024.7.25
+
+# HTTP requests and JSON handling
+requests>=2.32.2
+
+# Threading and async support
+gunicorn==21.2.0
+
+# Development and debugging
+python-dotenv==1.0.0
+
+# File system operations
+watchdog>=3.0.0
+
+# Date and time handling
+python-dateutil>=2.8.2
+
+# Logging and monitoring
+structlog>=23.2.0
