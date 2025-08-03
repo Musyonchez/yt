@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Duration Debug Test</title>
+</head>
+<body>
+    <h1>Duration Debug Test</h1>
+    <div id="debug-output"></div>
+    
+    <script>
+    // Test what the API is returning
+    fetch('http://localhost:5000/api/search?q=chainsmokers&page=1&per_page=5')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Full API response:', data);
+            
+            const output = document.getElementById('debug-output');
+            output.innerHTML = '<h3>Search Results:</h3>';
+            
+            if (data.results) {
+                data.results.forEach((video, index) => {
+                    output.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h4>${video.title}</h4>
+                            <p><strong>Duration (raw):</strong> ${JSON.stringify(video.duration)}</p>
+                            <p><strong>Channel:</strong> ${video.channel}</p>
+                            <p><strong>URL:</strong> ${video.url}</p>
+                        </div>
+                    `;
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('debug-output').innerHTML = 'Error: ' + error;
+        });
+    </script>
+</body>
+</html>
