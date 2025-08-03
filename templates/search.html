@@ -88,32 +88,6 @@
             <!-- Results will be populated here -->
         </div>
         
-        <!-- Pagination -->
-        <div id="pagination" class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-            <div class="flex items-center justify-between">
-                <button id="prev-page" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-chevron-left mr-2"></i>Previous
-                </button>
-                
-                <div class="flex items-center space-x-2">
-                    <span class="text-sm text-gray-600">Page</span>
-                    <span id="current-page" class="font-semibold text-gray-900">1</span>
-                    <span class="text-sm text-gray-600">of</span>
-                    <span id="total-pages" class="font-semibold text-gray-900">1</span>
-                </div>
-                
-                <button id="next-page" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    Next<i class="fas fa-chevron-right ml-2"></i>
-                </button>
-            </div>
-            
-            <!-- Load more button (for lazy loading) -->
-            <div class="mt-4 text-center">
-                <button id="load-more" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors hidden">
-                    <i class="fas fa-plus mr-2"></i>Load More Results
-                </button>
-            </div>
-        </div>
     </div>
     
     <!-- No results -->
@@ -196,22 +170,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Pagination controls
-    const prevBtn = document.getElementById('prev-page');
-    const nextBtn = document.getElementById('next-page');
-    const loadMoreBtn = document.getElementById('load-more');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => Search.previousPage());
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => Search.nextPage());
-    }
-    
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', () => Search.loadMore());
-    }
     
     // Bulk selection controls
     const selectAllBtn = document.getElementById('select-all');

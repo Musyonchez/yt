@@ -84,7 +84,7 @@ def api_search() -> Response:
     try:
         query = request.args.get('q', '').strip()
         page = int(request.args.get('page', 1))
-        per_page = int(request.args.get('per_page', 15))
+        per_page = int(request.args.get('per_page', 50))
         
         if not query:
             return jsonify({'error': 'Search query is required'}), 400

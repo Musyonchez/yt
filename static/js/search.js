@@ -6,9 +6,9 @@
 const Search = {
     // Configuration
     config: {
-        resultsPerPage: 15,
-        maxResults: 45,
-        maxPages: 3
+        resultsPerPage: 50,
+        maxResults: 50,
+        maxPages: 1
     },
     
     // State
@@ -355,7 +355,7 @@ const Search = {
      * Navigate to next page
      */
     nextPage: function() {
-        if (this.state.currentPage < this.state.totalPages) {
+        if (this.state.currentPage < Math.min(this.state.totalPages, this.config.maxPages)) {
             this.performSearch(this.state.currentQuery, this.state.currentPage + 1);
         }
     },

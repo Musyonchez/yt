@@ -36,14 +36,14 @@ class YouTubeService:
         Args:
             query: Search query string
             page: Page number (1-based)
-            per_page: Results per page (max 15 for lazy loading)
+            per_page: Results per page (max 50)
             
         Returns:
             Dictionary with search results and pagination info
         """
         try:
-            # Calculate total results to fetch (up to 45 max as per requirements)
-            max_results = min(45, page * per_page)
+            # Calculate total results to fetch (up to 50 max as per requirements)
+            max_results = min(50, page * per_page)
             search_query = f"ytsearch{max_results}:{query}"
             
             with yt_dlp.YoutubeDL(self.ydl_opts_search) as ydl:
@@ -77,7 +77,7 @@ class YouTubeService:
                     'per_page': per_page,
                     'total_results': total_results,
                     'total_pages': (total_results + per_page - 1) // per_page,
-                    'has_more': end_idx < total_results and end_idx < 45
+                    'has_more': end_idx < total_results and end_idx < 50
                 }
                 
         except Exception as e:
@@ -269,7 +269,7 @@ class YouTubeService:
         result = {
             'results': [],
             'page': page,
-            'per_page': 15,
+            'per_page': 50,
             'total_results': 0,
             'total_pages': 0,
             'has_more': False
