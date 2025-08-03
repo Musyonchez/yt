@@ -176,17 +176,74 @@ def api_download_pause() -> Response:
         logger.error(f"Pause downloads error: {e}")
         return jsonify({'error': 'Failed to pause downloads'}), 500
 
+@app.route('/api/download/stop', methods=['POST'])
+def api_download_stop() -> Response:
+    """Stop all downloads."""
+    try:
+        download_manager.stop_downloads()
+        return jsonify({'success': True, 'message': 'Downloads stopped'})
+        
+    except Exception as e:
+        logger.error(f"Stop downloads error: {e}")
+        return jsonify({'error': 'Failed to stop downloads'}), 500
+
+@app.route('/api/downloads/clear-completed', methods=['POST'])
+def api_clear_completed() -> Response:
+    """Clear completed downloads."""
+    try:
+        download_manager.clear_completed()
+        return jsonify({'success': True, 'message': 'Completed downloads cleared'})
+        
+    except Exception as e:
+        logger.error(f"Clear completed error: {e}")
+        return jsonify({'error': 'Failed to clear completed downloads'}), 500
+
+@app.route('/api/stats')
+def api_stats() -> Response:
+    """Get download statistics."""
+    try:
+        stats = download_manager.get_download_stats()
+        json_stats = json_manager.get_stats()
+        
+        # Combine stats
+        combined_stats = {
+            **stats,
+            **json_stats
+        }
+        
+        return jsonify(combined_stats)
+        
+    except Exception as e:
+        logger.error(f"Stats API error: {e}")
+        return jsonify({'error': 'Failed to get stats'}), 500
+
+@app.route('/api/progress')
+def api_progress() -> Response:
+    """Get current progress data (polling fallback)."""
+    try:
+        progress_data = download_manager.get_progress()
+        return jsonify(progress_data)
+    except Exception as e:
+        logger.error(f"Progress API error: {e}")
+        return jsonify({'error': 'Failed to get progress'}), 500
+
 @app.route('/progress')
 def progress_stream() -> Response:
     """Server-Sent Events endpoint for download progress."""
     def generate():
+        import json
+        import time
         while True:
             try:
-                progress_data = download_manager.get_progress()
-                yield f"data: {jsonify(progress_data).get_data(as_text=True)}\n\n"
+                with app.app_context():
+                    progress_data = download_manager.get_progress()
+                    yield f"data: {json.dumps(progress_data)}\n\n"
+                    time.sleep(2)  # Update every 2 seconds
             except Exception as e:
                 logger.error(f"Progress stream error: {e}")
-                yield f"data: {jsonify({'error': str(e)}).get_data(as_text=True)}\n\n"
+                with app.app_context():
+                    yield f"data: {json.dumps({'error': str(e)})}\n\n"
+                    time.sleep(5)  # Wait longer on error
     
     return Response(generate(), mimetype='text/event-stream')
 
