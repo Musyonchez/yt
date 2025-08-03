@@ -29,16 +29,16 @@
     <!-- Quick actions -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- URL Input Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift flex flex-col h-full">
             <div class="flex items-center mb-4">
                 <div class="w-10 h-10 bg-youtube/10 rounded-lg flex items-center justify-center mr-3">
                     <i class="fas fa-link text-youtube"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Quick Add</h3>
             </div>
-            <p class="text-gray-600 text-sm mb-4">Paste a YouTube URL to add it to your queue</p>
+            <p class="text-gray-600 text-sm mb-4 flex-grow">Paste a YouTube URL to add it to your queue</p>
             
-            <form id="quick-add-form" class="space-y-3">
+            <form id="quick-add-form" class="space-y-3 mt-auto">
                 <div>
                     <input type="url" 
                            id="quick-url-input" 
@@ -54,16 +54,16 @@
         </div>
         
         <!-- Search Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift flex flex-col h-full">
             <div class="flex items-center mb-4">
                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                     <i class="fas fa-search text-blue-600"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Search YouTube</h3>
             </div>
-            <p class="text-gray-600 text-sm mb-4">Find videos by artist, song name, or keywords</p>
+            <p class="text-gray-600 text-sm mb-4 flex-grow">Find videos by artist, song name, or keywords</p>
             
-            <form id="quick-search-form" class="space-y-3">
+            <form id="quick-search-form" class="space-y-3 mt-auto">
                 <div>
                     <input type="text" 
                            id="quick-search-input" 
@@ -79,16 +79,16 @@
         </div>
         
         <!-- Playlist Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover-lift flex flex-col h-full">
             <div class="flex items-center mb-4">
                 <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                     <i class="fas fa-list text-green-600"></i>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900">Playlist Import</h3>
             </div>
-            <p class="text-gray-600 text-sm mb-4">Import entire YouTube playlists at once</p>
+            <p class="text-gray-600 text-sm mb-4 flex-grow">Import entire YouTube playlists at once</p>
             
-            <form id="quick-playlist-form" class="space-y-3">
+            <form id="quick-playlist-form" class="space-y-3 mt-auto">
                 <div>
                     <input type="url" 
                            id="quick-playlist-input" 
