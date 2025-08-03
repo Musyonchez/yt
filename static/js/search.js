@@ -77,6 +77,7 @@ const Search = {
         
         try {
             this.showLoadingState();
+            this.setSearchButtonLoading(true);
             
             const results = await App.searchVideos(query, page, this.config.resultsPerPage);
             
@@ -96,6 +97,7 @@ const Search = {
             App.showToast('Search failed: ' + error.message, 'error');
         } finally {
             this.state.isLoading = false;
+            this.setSearchButtonLoading(false);
         }
     },
     
@@ -475,6 +477,37 @@ const Search = {
                 element.classList.add('hidden');
             }
         });
+    },
+    
+    /**
+     * Set search button loading state
+     */
+    setSearchButtonLoading: function(isLoading) {
+        const searchButton = document.getElementById('search-button');
+        const searchIcon = document.getElementById('search-icon');
+        const searchSpinner = document.getElementById('search-spinner');
+        const searchText = document.getElementById('search-text');
+        const searchInput = document.getElementById('search-input');
+        
+        if (!searchButton) return;
+        
+        if (isLoading) {
+            // Show loading state
+            searchButton.disabled = true;
+            searchInput.disabled = true;
+            searchIcon.classList.add('hidden');
+            searchSpinner.classList.remove('hidden');
+            searchText.textContent = 'Searching...';
+            searchButton.classList.add('cursor-not-allowed');
+        } else {
+            // Show normal state
+            searchButton.disabled = false;
+            searchInput.disabled = false;
+            searchIcon.classList.remove('hidden');
+            searchSpinner.classList.add('hidden');
+            searchText.textContent = 'Search';
+            searchButton.classList.remove('cursor-not-allowed');
+        }
     }
 };
 

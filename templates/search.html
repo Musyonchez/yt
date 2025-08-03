@@ -19,12 +19,15 @@
                 <input type="text" 
                        id="search-input" 
                        placeholder="Search for artists, songs, albums..." 
-                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
                        value="{{ request.args.get('q', '') }}">
             </div>
             <button type="submit" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
-                <i class="fas fa-search mr-2"></i>Search
+                    id="search-button"
+                    class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                <i id="search-icon" class="fas fa-search mr-2"></i>
+                <div id="search-spinner" class="spinner w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2 hidden"></div>
+                <span id="search-text">Search</span>
             </button>
         </form>
     </div>
@@ -33,9 +36,20 @@
     <div id="search-results" class="space-y-4">
         {% if request.args.get('q') %}
         <!-- Loading state -->
-        <div id="loading-state" class="text-center py-12">
-            <div class="spinner w-8 h-8 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-4"></div>
-            <p class="text-gray-600">Searching YouTube...</p>
+        <div id="loading-state" class="text-center py-16 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="relative">
+                <div class="spinner w-12 h-12 border-4 border-gray-200 border-t-youtube rounded-full mx-auto mb-6"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <i class="fas fa-youtube text-youtube text-lg"></i>
+                </div>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Searching YouTube</h3>
+            <p class="text-gray-600 mb-4">Finding the best audio content for you...</p>
+            <div class="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                <div class="w-2 h-2 bg-youtube rounded-full animate-pulse"></div>
+                <div class="w-2 h-2 bg-youtube rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-youtube rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+            </div>
         </div>
         {% else %}
         <!-- Empty state -->
@@ -150,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const query = document.getElementById('search-input').value.trim();
-            if (query) {
+            if (query && !Search.state.isLoading) {
                 Search.performSearch(query);
                 // Update URL without page reload
                 const newUrl = new URL(window.location);
@@ -164,9 +178,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const suggestions = document.querySelectorAll('.search-suggestion');
     suggestions.forEach(suggestion => {
         suggestion.addEventListener('click', function() {
-            const query = this.dataset.query;
-            document.getElementById('search-input').value = query;
-            Search.performSearch(query);
+            if (!Search.state.isLoading) {
+                const query = this.dataset.query;
+                document.getElementById('search-input').value = query;
+                Search.performSearch(query);
+                // Update URL without page reload
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('q', query);
+                window.history.pushState({}, '', newUrl);
+            }
         });
     });
     
