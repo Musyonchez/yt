@@ -89,7 +89,28 @@ def api_search() -> Response:
         if not query:
             return jsonify({'error': 'Search query is required'}), 400
         
+        # Get raw search results
         results = youtube_service.search_videos(query, page=page, per_page=per_page)
+        
+        # Filter out already downloaded URLs
+        if 'results' in results and results['results']:
+            downloaded_urls = set(json_manager.get_downloaded())
+            queued_urls = set(json_manager.get_queue())
+            
+            # Store original count
+            original_count = len(results['results'])
+            
+            # Filter out downloaded and queued URLs
+            filtered_results = []
+            for video in results['results']:
+                if video['url'] not in downloaded_urls and video['url'] not in queued_urls:
+                    filtered_results.append(video)
+            
+            # Update results with filtered data
+            results['results'] = filtered_results
+            results['filtered_count'] = len(filtered_results)
+            results['original_count'] = original_count
+        
         return jsonify(results)
         
     except Exception as e:
@@ -105,7 +126,30 @@ def api_playlist() -> Response:
         if not url:
             return jsonify({'error': 'Playlist URL is required'}), 400
         
+        # Get raw playlist videos
         videos = youtube_service.get_playlist_videos(url)
+        
+        # Filter out already downloaded and queued URLs
+        if videos:
+            downloaded_urls = set(json_manager.get_downloaded())
+            queued_urls = set(json_manager.get_queue())
+            
+            # Store original count
+            original_count = len(videos)
+            
+            # Filter out downloaded and queued URLs
+            filtered_videos = []
+            for video in videos:
+                if video['url'] not in downloaded_urls and video['url'] not in queued_urls:
+                    filtered_videos.append(video)
+            
+            # Return filtered results with metadata
+            return jsonify({
+                'videos': filtered_videos,
+                'filtered_count': len(filtered_videos),
+                'original_count': original_count
+            })
+        
         return jsonify({'videos': videos})
         
     except Exception as e:
