@@ -147,11 +147,14 @@ const Search = {
         }
         
         videos.forEach((video, index) => {
-            const videoElement = this.createVideoElement(video, template);
-            grid.appendChild(videoElement);
+            const videoFragment = this.createVideoElement(video, template);
+            grid.appendChild(videoFragment);
+            
+            // Get the actual element after it's been appended
+            const videoElement = grid.lastElementChild;
             
             // Add to intersection observer
-            if (this.observer) {
+            if (this.observer && videoElement) {
                 this.observer.observe(videoElement);
             }
         });
