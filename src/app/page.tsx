@@ -18,7 +18,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                href="/signup" 
+                href="/login" 
                 className="bg-black text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-800 transition-colors"
               >
                 Start Downloading
@@ -175,7 +175,7 @@ export default function Home() {
             Join thousands of music lovers who download with ninja-like precision.
           </p>
           <Link 
-            href="/signup" 
+            href="/login" 
             className="bg-white text-black px-8 py-4 rounded-lg text-lg font-medium hover:bg-gray-100 transition-colors inline-block"
           >
             Start Your Ninja Journey
