@@ -28,8 +28,14 @@ Execute these scripts **in order**:
 -- This fixes infinite recursion errors in user policies
 ```
 
+#### Step 4: Fix UPDATE Policy (IMPORTANT!)
+```sql
+-- Copy and paste the contents of 04_fix_update_policy.sql
+-- This fixes the OLD reference error in UPDATE policies
+```
+
 ### 3. Verify Setup
-After running all three scripts, verify the tables exist:
+After running all four scripts, verify the tables exist:
 ```sql
 SELECT table_name 
 FROM information_schema.tables 
@@ -97,8 +103,13 @@ AND table_name IN ('users', 'songs', 'user_downloads', 'admin_actions', 'friends
 - This replaces problematic policies with corrected versions
 - Restart your Next.js app after applying the fix
 
+### Error: "missing FROM-clause entry for table 'old'"
+- Run `04_fix_update_policy.sql` to fix the UPDATE policy
+- This removes incorrect OLD references in INSERT/UPDATE policies
+- The OLD keyword only works in UPDATE triggers, not policies
+
 ### Error: "RLS policy violation" 
-- Make sure you ran both `02_row_level_security.sql` and `03_fix_rls_policies.sql`
+- Make sure you ran all fix scripts: `02_row_level_security.sql`, `03_fix_rls_policies.sql`, and `04_fix_update_policy.sql`
 - Check that RLS policies are enabled
 - Verify user has proper permissions
 
