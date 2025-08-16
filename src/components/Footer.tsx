@@ -5,10 +5,10 @@ export default function Footer() {
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="flex flex-col md:grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center mb-4">
+            <Link href="/" className="flex items-center justify-center md:justify-start mb-4">
               <Image
                 src="/logo-black.png"
                 alt="MP3 Ninja"
@@ -17,11 +17,11 @@ export default function Footer() {
                 className="h-8 w-auto"
               />
             </Link>
-            <p className="text-gray-600 mb-4 max-w-md">
+            <p className="text-gray-600 mb-4 max-w-md text-center md:text-left mx-auto md:mx-0">
               Fast, efficient, and stealthy. Download YouTube music with ninja-like precision. 
               Share your discoveries with friends and build your ultimate music collection.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center md:justify-start">
               <a href="#" className="text-gray-400 hover:text-gray-600 transition-colors">
                 <span className="sr-only">Twitter</span>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -43,47 +43,50 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Product */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              Product
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/api-docs" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  API Docs
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Links container - side by side on mobile, separate columns on md+ */}
+          <div className="grid grid-cols-2 md:contents gap-8 justify-items-center md:justify-items-start">
+            {/* Product */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+                Product
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/api-docs" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    API Docs
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Support */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
-              Support
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link href="/help" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
+            {/* Support */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4">
+                Support
+              </h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/help" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Help Center
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
