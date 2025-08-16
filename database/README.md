@@ -34,6 +34,13 @@ Execute these scripts **in order**:
 -- This fixes the OLD reference error in UPDATE policies
 ```
 
+#### Step 5: Complete Policy Reset (IF STILL HAVING ISSUES!)
+```sql
+-- If you're still getting recursion errors, run this complete reset:
+-- Copy and paste the contents of 05_complete_policy_reset.sql
+-- This completely resets all policies and uses safe functions
+```
+
 ### 3. Verify Setup
 After running all four scripts, verify the tables exist:
 ```sql
@@ -98,9 +105,11 @@ AND table_name IN ('users', 'songs', 'user_downloads', 'admin_actions', 'friends
 - Check that the script executed without errors
 - Verify tables exist in Supabase Table Editor
 
-### Error: "infinite recursion detected in policy for relation 'users'"
-- Run `03_fix_rls_policies.sql` to fix the policy recursion
-- This replaces problematic policies with corrected versions
+### Error: "infinite recursion detected in policy for relation 'users'" (PERSISTENT)
+- If the error persists after running previous fixes, use the nuclear option:
+- Run `05_complete_policy_reset.sql` to completely reset all policies
+- This removes ALL existing policies and recreates them safely
+- Updates application code to use safe RPC functions instead of direct table access
 - Restart your Next.js app after applying the fix
 
 ### Error: "missing FROM-clause entry for table 'old'"

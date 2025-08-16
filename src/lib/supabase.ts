@@ -45,20 +45,15 @@ export interface UserDownload {
 
 // User management functions for hybrid auth approach
 export const createOrUpdateUser = async (authUser: AuthUser) => {
+  // Use the safe upsert function to avoid RLS issues
   const { data, error } = await supabase
-    .from('users')
-    .upsert({
-      id: authUser.id,
-      email: authUser.email,
-      google_id: authUser.user_metadata?.sub,
-      display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
-      avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture,
-      updated_at: new Date().toISOString(),
-    }, {
-      onConflict: 'id'
-    })
-    .select()
-    .single();
+    .rpc('safe_upsert_user', {
+      user_id: authUser.id,
+      user_email: authUser.email,
+      user_google_id: authUser.user_metadata?.sub,
+      user_display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
+      user_avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture,
+    });
 
   if (error) {
     console.error('Error creating/updating user:', error);
