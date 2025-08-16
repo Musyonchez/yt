@@ -86,6 +86,7 @@ friendships (
 3. **Music Discovery**: "Friends who downloaded this song"
 4. **Song Statistics**: Total downloads, trending songs
 5. **Activity Feed**: See what friends are downloading
+6. **Audio Previews**: Up to 4-minute preview streaming (prevents abuse while allowing full song experience)
 
 ### User Experience
 1. **Mobile-First**: PWA with offline capability
@@ -274,6 +275,37 @@ CREATE POLICY "users_add_songs" ON songs
 3. Advanced search filters
 4. Playlist management
 
+## Audio Preview System
+
+### Preview Strategy
+- **Duration Limit**: Maximum 4 minutes per preview (prevents abuse, allows full song experience)
+- **Smart Streaming**: Stream audio directly without storing full files
+- **Quality**: Reasonable quality for preview purposes (128kbps)
+- **Anti-Abuse**: Rate limiting, user session tracking
+
+### Technical Implementation
+```sql
+-- Add to songs table
+ALTER TABLE songs ADD COLUMN preview_available BOOLEAN DEFAULT false;
+ALTER TABLE songs ADD COLUMN preview_duration INTEGER; -- actual duration in seconds
+
+-- Preview sessions tracking (anti-abuse)
+CREATE TABLE preview_sessions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  song_id UUID REFERENCES songs(id),
+  duration_played INTEGER, -- seconds played
+  created_at TIMESTAMP,
+  UNIQUE(user_id, song_id, DATE(created_at)) -- One session per song per day
+);
+```
+
+### Preview Components
+- **Stream Player**: Direct audio streaming (no download)
+- **Progress Control**: Seek within the 4-minute limit
+- **Quality Toggle**: 128kbps for preview, full quality for download
+- **Session Management**: Track preview usage to prevent abuse
+
 ## Questions to Resolve
 
 1. **YouTube API Limits**: How to handle rate limits for search?
@@ -284,6 +316,9 @@ CREATE POLICY "users_add_songs" ON songs
 6. **Mobile App**: Web app vs native mobile app?
 7. **Content Moderation**: How to handle inappropriate content?
 8. **Performance**: Caching strategy for popular songs?
+9. **Preview Abuse Prevention**: Daily limits per user? Session timeouts?
+10. **Legal Considerations**: Copyright implications of 4-minute previews?
+11. **Bandwidth Costs**: Preview streaming costs vs full downloads?
 
 ## Success Metrics
 
@@ -298,9 +333,47 @@ CREATE POLICY "users_add_songs" ON songs
 - Average download time
 - API response times
 - Database query performance
+- Preview streaming quality and buffering
+- Server resource usage (preview vs download costs)
 
 ### Social Features
 - Friend activity engagement
 - Popular songs discovery rate
 - Collaborative playlist usage
 - Cross-device usage patterns
+- Preview-to-download conversion rate
+
+## Additional Considerations
+
+### Legal & Compliance
+- **Copyright**: 4-minute previews may need legal review
+- **DMCA**: Takedown request handling system
+- **Terms of Service**: Clear usage guidelines for previews
+- **Regional Restrictions**: Geo-blocking for certain content
+
+### Scalability Concerns
+- **Preview Bandwidth**: Streaming costs vs storage costs analysis
+- **CDN Strategy**: Global content delivery for previews
+- **Server Load**: Preview generation vs on-demand streaming
+- **Database Growth**: User sessions and preview data retention
+
+### User Privacy
+- **Listening History**: What preview data do we store?
+- **Analytics**: User behavior tracking (anonymized)
+- **Data Retention**: How long to keep preview session data
+- **GDPR Compliance**: Right to deletion, data export
+
+### Technical Edge Cases
+- **Offline Mode**: What happens to previews offline?
+- **Network Issues**: Graceful degradation for poor connections
+- **Audio Formats**: Compatibility across devices
+- **Age-Restricted Content**: YouTube age verification handling
+- **Private/Unlisted Videos**: Access permission handling
+
+### Future Features to Consider
+- **Lyrics Integration**: Real-time lyrics during preview
+- **Audio Analysis**: BPM, genre, mood detection
+- **Smart Playlists**: Auto-generated based on preview behavior
+- **Social Sharing**: Share specific timestamp moments
+- **Voice Search**: "Find me upbeat songs like..."
+- **Offline Sync**: Download previews for offline discovery
