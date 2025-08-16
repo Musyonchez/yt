@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
-import { promisify } from 'util';
 
 /**
  * Test API endpoint to verify yt-dlp subprocess execution

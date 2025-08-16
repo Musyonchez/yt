@@ -112,11 +112,11 @@ export async function getPlaylistWithYtDlp(url: string, maxResults: number = 50)
 /**
  * Get the best quality thumbnail from yt-dlp thumbnails array
  */
-function getBestThumbnail(thumbnails: any[]): string {
+function getBestThumbnail(thumbnails: { url: string; width?: number; height?: number }[]): string {
   if (!thumbnails || thumbnails.length === 0) return '';
   
   // Prefer medium quality thumbnails, fall back to any available
-  const preferred = thumbnails.find(t => t.width >= 300 && t.width <= 500);
+  const preferred = thumbnails.find(t => t.width && t.width >= 300 && t.width <= 500);
   return preferred?.url || thumbnails[thumbnails.length - 1]?.url || '';
 }
 
