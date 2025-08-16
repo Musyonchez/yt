@@ -50,17 +50,39 @@ export default function SearchResults({
       return;
     }
 
+    const video = results.find(v => v.youtube_id === videoId);
+    if (!video) return;
+
     setAddingToLibrary(prev => new Set(prev).add(videoId));
     
     try {
-      // TODO: Implement actual API call to add to library
-      console.log('Adding to library:', videoId);
+      const response = await fetch('/api/library/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songs: [video],
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add to library');
+      }
+
+      // Show success message
+      console.log('Added to library:', data.message);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Show toast notification
+      // toast.success(data.message);
       
     } catch (error) {
       console.error('Error adding to library:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to add to library');
     } finally {
       setAddingToLibrary(prev => {
         const newSet = new Set(prev);
@@ -73,9 +95,39 @@ export default function SearchResults({
   const handleBulkAddToLibrary = async () => {
     if (!user || selectedVideos.size === 0) return;
 
-    // TODO: Implement bulk add to library
-    console.log('Bulk adding to library:', Array.from(selectedVideos));
-    setSelectedVideos(new Set());
+    const selectedSongs = results.filter(video => selectedVideos.has(video.youtube_id));
+    
+    try {
+      const response = await fetch('/api/library/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songs: selectedSongs,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add songs to library');
+      }
+
+      console.log('Bulk added to library:', data.message);
+      
+      // Clear selection after successful bulk add
+      setSelectedVideos(new Set());
+      
+      // TODO: Show toast notification
+      // toast.success(data.message);
+      
+    } catch (error) {
+      console.error('Error bulk adding to library:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to add songs to library');
+    }
   };
 
   if (isLoading) {
