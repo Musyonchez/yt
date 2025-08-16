@@ -277,34 +277,73 @@ CREATE POLICY "users_add_songs" ON songs
 
 ## Audio Preview System
 
-### Preview Strategy
-- **Duration Limit**: Maximum 4 minutes per preview (prevents abuse, allows full song experience)
-- **Smart Streaming**: Stream audio directly without storing full files
-- **Quality**: Reasonable quality for preview purposes (128kbps)
-- **Anti-Abuse**: Rate limiting, user session tracking
+### YouTube Integration Strategy (Recommended)
+- **Lightweight**: YouTube iframes with lazy loading (zero server strain)
+- **Two Preview Options**: 
+  - Click thumbnail → Embedded YouTube player 
+  - Click song title → Opens YouTube in new tab (`target="_blank"`)
+- **Zero Costs**: YouTube handles all streaming, CDN, and bandwidth
+- **Professional Quality**: YouTube's adaptive quality and global infrastructure
 
 ### Technical Implementation
-```sql
--- Add to songs table
-ALTER TABLE songs ADD COLUMN preview_available BOOLEAN DEFAULT false;
-ALTER TABLE songs ADD COLUMN preview_duration INTEGER; -- actual duration in seconds
-
--- Preview sessions tracking (anti-abuse)
-CREATE TABLE preview_sessions (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES users(id),
-  song_id UUID REFERENCES songs(id),
-  duration_played INTEGER, -- seconds played
-  created_at TIMESTAMP,
-  UNIQUE(user_id, song_id, DATE(created_at)) -- One session per song per day
-);
+```typescript
+// Lazy YouTube Embed Component
+const LazyYouTubeEmbed = ({ videoId, title, thumbnail }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  
+  const openInNewTab = () => {
+    window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
+  };
+  
+  return (
+    <div className="song-card">
+      {/* Thumbnail - Click to play embedded */}
+      {!isLoaded ? (
+        <div 
+          className="youtube-thumbnail cursor-pointer relative"
+          onClick={() => setIsLoaded(true)}
+        >
+          <img src={thumbnail} alt={title} className="w-full h-32 object-cover rounded" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="bg-red-600 text-white rounded-full p-3">▶️</div>
+          </div>
+        </div>
+      ) : (
+        <iframe
+          className="w-full h-32 rounded"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+          frameBorder="0"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      )}
+      
+      {/* Song Info - Click to open in new tab */}
+      <div className="mt-3">
+        <h3 
+          className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
+          onClick={openInNewTab}
+        >
+          {title}
+        </h3>
+        <p className="text-gray-600">{artist}</p>
+      </div>
+      
+      {/* Download Button */}
+      <button onClick={() => onDownload(song)}>
+        Download MP3
+      </button>
+    </div>
+  );
+};
 ```
 
-### Preview Components
-- **Stream Player**: Direct audio streaming (no download)
-- **Progress Control**: Seek within the 4-minute limit
-- **Quality Toggle**: 128kbps for preview, full quality for download
-- **Session Management**: Track preview usage to prevent abuse
+### Preview Benefits
+- **Zero Server Load**: No streaming, bandwidth, or storage costs
+- **Always Available**: YouTube's 99.9% uptime vs our preview system
+- **No Legal Issues**: Just linking to YouTube (fair use)
+- **Better UX**: Full YouTube experience with comments, related videos
+- **Mobile Optimized**: YouTube handles all device compatibility
 
 ## Questions to Resolve
 
@@ -316,9 +355,8 @@ CREATE TABLE preview_sessions (
 6. **Mobile App**: Web app vs native mobile app?
 7. **Content Moderation**: How to handle inappropriate content?
 8. **Performance**: Caching strategy for popular songs?
-9. **Preview Abuse Prevention**: Daily limits per user? Session timeouts?
-10. **Legal Considerations**: Copyright implications of 4-minute previews?
-11. **Bandwidth Costs**: Preview streaming costs vs full downloads?
+9. **YouTube Embed Policy**: Any restrictions on embedded players?
+10. **Autoplay Behavior**: Handle browsers that block autoplay?
 
 ## Success Metrics
 
@@ -346,16 +384,16 @@ CREATE TABLE preview_sessions (
 ## Additional Considerations
 
 ### Legal & Compliance
-- **Copyright**: 4-minute previews may need legal review
-- **DMCA**: Takedown request handling system
-- **Terms of Service**: Clear usage guidelines for previews
-- **Regional Restrictions**: Geo-blocking for certain content
+- **Copyright**: YouTube embedding is generally fair use (linking, not hosting)
+- **DMCA**: YouTube handles takedowns automatically
+- **Terms of Service**: Must comply with YouTube's embedding policies
+- **Regional Restrictions**: YouTube handles geo-blocking automatically
 
 ### Scalability Concerns
-- **Preview Bandwidth**: Streaming costs vs storage costs analysis
-- **CDN Strategy**: Global content delivery for previews
-- **Server Load**: Preview generation vs on-demand streaming
-- **Database Growth**: User sessions and preview data retention
+- **YouTube Dependency**: Reliance on YouTube's availability and policies
+- **Embed Limits**: Potential API limits for embedded players
+- **Database Growth**: User sessions and metadata retention
+- **CDN Strategy**: Only needed for our app assets, not media content
 
 ### User Privacy
 - **Listening History**: What preview data do we store?
