@@ -14,7 +14,9 @@ users (
   email TEXT UNIQUE,
   google_id TEXT UNIQUE,
   display_name TEXT,
+  username TEXT UNIQUE, -- For friend discovery
   avatar_url TEXT,
+  is_public BOOLEAN DEFAULT true, -- Public profile for friend discovery
   created_at TIMESTAMP,
   updated_at TIMESTAMP
 )
@@ -292,6 +294,7 @@ const LazyYouTubeEmbed = ({ videoId, title, thumbnail }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   const openInNewTab = () => {
+    // Opens YouTube in new tab - no autoplay, user controls playback
     window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank', 'noopener,noreferrer');
   };
   
@@ -350,13 +353,28 @@ const LazyYouTubeEmbed = ({ videoId, title, thumbnail }) => {
 1. **YouTube API Limits**: How to handle rate limits for search?
 2. **Download Processing**: Server-side conversion vs client-side?
 3. **Real-time Updates**: WebSocket vs Supabase Realtime?
-4. **Friend Discovery**: Email invites vs username search?
-5. **Playlist Size Limits**: Max songs per playlist download?
-6. **Mobile App**: Web app vs native mobile app?
-7. **Content Moderation**: How to handle inappropriate content?
-8. **Performance**: Caching strategy for popular songs?
-9. **YouTube Embed Policy**: Any restrictions on embedded players?
-10. **Autoplay Behavior**: Handle browsers that block autoplay?
+4. **Playlist Size Limits**: Max songs per playlist download?
+5. **YouTube Embed Policy**: Any restrictions on embedded players?
+6. **Search API Optimization**: Cache YouTube search results to reduce API calls?
+7. **Database Indexing**: Optimize queries for popular songs and friend discovery?
+
+## Decided Features
+
+### **Preview Strategy**
+- **Thumbnail Click**: Embedded YouTube player (autoplay enabled for immediate preview)
+- **Title Click**: New tab opens YouTube (no autoplay - user controls when to play)
+
+### **Performance & Caching**
+- **Song Metadata**: Cache in database (title, artist, duration, thumbnail)
+- **Search Results**: Cache YouTube API responses for popular searches
+- **No File Caching**: Downloads go directly to user device
+- **Database Indexing**: Optimize for friend discovery and popular song queries
+
+### **User Management**
+- **Platform**: Progressive Web App (PWA) - works on all devices
+- **Friend Discovery**: Username search system (no email invites)
+- **Content Moderation**: None - adult users, personal responsibility
+- **Age Restriction**: 18+ platform assumption
 
 ## Success Metrics
 
