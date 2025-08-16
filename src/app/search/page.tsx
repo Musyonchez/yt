@@ -2,28 +2,61 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/components/AuthProvider';
+import SearchResults from '@/components/SearchResults';
+import { VideoInfo, determineSearchType } from '@/lib/youtube';
 
 export default function SearchPage() {
   const { user } = useAuth();
   const [searchMethod, setSearchMethod] = useState<'url' | 'playlist' | 'text'>('text');
   const [searchInput, setSearchInput] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<VideoInfo[]>([]);
+  const [searchType, setSearchType] = useState<'video' | 'playlist' | 'text'>('text');
+  const [playlistInfo, setPlaylistInfo] = useState<{title: string; video_count: number} | undefined>();
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchInput.trim()) return;
 
     setIsSearching(true);
+    setHasSearched(false);
     
     try {
-      // TODO: Implement actual search functionality
-      console.log(`Searching ${searchMethod}:`, searchInput);
+      // Determine search type automatically or use selected method
+      const detectedType = determineSearchType(searchInput);
+      const finalSearchType = searchMethod === 'text' ? detectedType : 
+                             searchMethod === 'url' ? 'video' :
+                             searchMethod === 'playlist' ? 'playlist' : detectedType;
+
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: searchInput,
+          type: finalSearchType
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Search failed');
+      }
+
+      const data = await response.json();
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSearchResults(data.results || []);
+      setSearchType(data.type);
+      setPlaylistInfo(data.playlistInfo);
+      setHasSearched(true);
       
     } catch (error) {
       console.error('Search error:', error);
+      // TODO: Show error toast/message to user
+      setSearchResults([]);
+      setHasSearched(true);
     } finally {
       setIsSearching(false);
     }
@@ -201,10 +234,29 @@ export default function SearchPage() {
           </div>
         )}
 
-        {/* Search Results Placeholder */}
-        <div id="search-results" className="max-w-4xl mx-auto">
-          {/* TODO: Add SearchResults component here */}
-        </div>
+        {/* Search Results */}
+        {hasSearched && (
+          <div className="max-w-4xl mx-auto">
+            <SearchResults
+              results={searchResults}
+              isLoading={isSearching}
+              searchType={searchType}
+              playlistInfo={playlistInfo}
+            />
+            
+            {!isSearching && searchResults.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🥷</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No results found
+                </h3>
+                <p className="text-gray-600">
+                  Try adjusting your search terms or check the URL format.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
