@@ -74,11 +74,15 @@ export default function Navbar() {
                   className="flex items-center space-x-2 focus:outline-none"
                 >
                   <Image
-                    src={user.avatar_url || '/default-avatar.png'}
+                    src={user.avatar_url || '/default-avatar.svg'}
                     alt={user.display_name || 'Profile'}
                     width={32}
                     height={32}
                     className="w-8 h-8 rounded-full border-2 border-gray-200 hover:border-gray-300 transition-colors"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/default-avatar.svg';
+                    }}
                   />
                 </button>
 
@@ -192,11 +196,15 @@ export default function Navbar() {
                   <div className="border-t border-gray-200 pt-4">
                     <div className="flex items-center space-x-3 mb-4">
                       <Image
-                        src={user.avatar_url || '/default-avatar.png'}
+                        src={user.avatar_url || '/default-avatar.svg'}
                         alt={user.display_name || 'Profile'}
                         width={32}
                         height={32}
                         className="w-8 h-8 rounded-full"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/default-avatar.svg';
+                        }}
                       />
                       <div>
                         <p className="text-sm font-medium text-gray-900">
