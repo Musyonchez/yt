@@ -348,15 +348,121 @@ const LazyYouTubeEmbed = ({ videoId, title, thumbnail }) => {
 - **Better UX**: Full YouTube experience with comments, related videos
 - **Mobile Optimized**: YouTube handles all device compatibility
 
-## Questions to Resolve
+## Final Technical Decisions
 
-1. **YouTube API Limits**: How to handle rate limits for search?
-2. **Download Processing**: Server-side conversion vs client-side?
-3. **Real-time Updates**: WebSocket vs Supabase Realtime?
-4. **Playlist Size Limits**: Max songs per playlist download?
-5. **YouTube Embed Policy**: Any restrictions on embedded players?
-6. **Search API Optimization**: Cache YouTube search results to reduce API calls?
-7. **Database Indexing**: Optimize queries for popular songs and friend discovery?
+### **Database Optimization**
+```sql
+-- Indexes for performance
+CREATE INDEX idx_songs_youtube_id ON songs(youtube_id);
+CREATE INDEX idx_songs_title_search ON songs USING gin(to_tsvector('english', title || ' ' || artist));
+CREATE INDEX idx_user_downloads_user_id ON user_downloads(user_id);
+CREATE INDEX idx_user_downloads_song_id ON user_downloads(song_id);
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_friendships_user_friend ON friendships(user_id, friend_id);
+```
+
+### **YouTube API Management**
+- **Rate Limits**: Implement exponential backoff and request queuing
+- **Search Caching**: Cache popular search terms for 1 hour to reduce API calls
+- **Fallback Strategy**: Graceful degradation when API limits hit
+
+```typescript
+// API Rate Limiting Strategy
+class YouTubeAPIManager {
+  private requestQueue: Array<() => Promise<any>> = [];
+  private isProcessing = false;
+  private lastRequestTime = 0;
+  private minInterval = 100; // 100ms between requests
+
+  async search(query: string) {
+    // Check cache first
+    const cached = await this.getCachedSearch(query);
+    if (cached && cached.expires > Date.now()) {
+      return cached.results;
+    }
+
+    // Queue request with rate limiting
+    return this.queueRequest(() => this.executeSearch(query));
+  }
+
+  private async queueRequest<T>(request: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.requestQueue.push(async () => {
+        try {
+          await this.waitForRateLimit();
+          const result = await request();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.processQueue();
+    });
+  }
+}
+```
+
+### **Download Processing**
+- **Server-Side Conversion**: More reliable, better quality control
+- **Queue System**: Background job processing for downloads
+- **Progress Tracking**: WebSocket updates for download status
+
+```typescript
+// Download Queue System
+interface DownloadJob {
+  id: string;
+  userId: string;
+  youtubeUrl: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  progress: number;
+  error?: string;
+}
+
+// API Route: /api/download
+export async function POST(request: Request) {
+  const { youtubeUrl, userId } = await request.json();
+  
+  // Add to queue
+  const jobId = await addToDownloadQueue({
+    userId,
+    youtubeUrl,
+    status: 'pending',
+    progress: 0
+  });
+  
+  // Process in background
+  processDownloadQueue();
+  
+  return Response.json({ jobId, status: 'queued' });
+}
+
+// Background processor
+async function processDownload(job: DownloadJob) {
+  try {
+    updateJobStatus(job.id, 'processing', 10);
+    
+    // Extract audio using yt-dlp
+    const audioStream = await extractAudio(job.youtubeUrl);
+    updateJobStatus(job.id, 'processing', 70);
+    
+    // Convert to MP3
+    const mp3Buffer = await convertToMp3(audioStream);
+    updateJobStatus(job.id, 'processing', 90);
+    
+    // Stream to client
+    streamToClient(job.userId, mp3Buffer);
+    updateJobStatus(job.id, 'completed', 100);
+    
+  } catch (error) {
+    updateJobStatus(job.id, 'failed', 0, error.message);
+  }
+}
+```
+
+### **Content Management**
+- **Playlist Handling**: Paginate large playlists (50 songs per page)
+- **No Real-Time**: Static popular songs list (updated hourly)
+- **Embed Policy**: Non-commercial use, monitor for policy changes
 
 ## Decided Features
 
