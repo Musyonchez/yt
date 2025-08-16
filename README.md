@@ -49,6 +49,25 @@ user_downloads (
 )
 ```
 
+#### Admin Management
+```sql
+-- Add admin fields to users table
+ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN is_banned BOOLEAN DEFAULT false;
+ALTER TABLE users ADD COLUMN banned_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN banned_reason TEXT;
+
+-- Admin actions log
+CREATE TABLE admin_actions (
+  id UUID PRIMARY KEY,
+  admin_id UUID REFERENCES users(id),
+  target_user_id UUID REFERENCES users(id),
+  action_type TEXT, -- 'ban', 'unban', 'delete', 'promote'
+  reason TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
 #### Friendships (Optional Social Feature)
 ```sql
 friendships (
@@ -182,7 +201,9 @@ ORDER BY friend_count DESC;
 ```
 src/
 ├── app/
-│   ├── page.tsx                    # Dashboard
+│   ├── page.tsx                    # Main landing page
+│   ├── dashboard/page.tsx          # User dashboard with download history
+│   ├── admin/page.tsx              # Admin panel for user management
 │   ├── search/page.tsx             # YouTube search
 │   ├── library/page.tsx            # User's downloads
 │   ├── discover/page.tsx           # Popular & friend activity
@@ -254,24 +275,30 @@ CREATE POLICY "users_add_songs" ON songs
 ## Migration Plan
 
 ### Phase 1: Core Setup
-1. Initialize Supabase project
-2. Set up Google OAuth
+1. Initialize Supabase project ✅
+2. Set up Google OAuth ✅
 3. Create database schema
 4. Implement basic authentication
 
-### Phase 2: Basic Downloads
+### Phase 2: User Interface & Management
+1. User dashboard with download history pagination
+2. Admin panel for user management and email banning
+3. Basic navigation and branding integration
+4. Responsive design implementation
+
+### Phase 3: Basic Downloads
 1. YouTube search integration
 2. Download to device functionality
 3. Basic UI components
 4. Duplicate prevention
 
-### Phase 3: Social Features
+### Phase 4: Social Features
 1. Friend system
 2. Popular songs
 3. Music discovery
 4. Activity feeds
 
-### Phase 4: Advanced Features
+### Phase 5: Advanced Features
 1. PWA capabilities
 2. Offline functionality
 3. Advanced search filters
