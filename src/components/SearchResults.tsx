@@ -245,12 +245,14 @@ export default function SearchResults({
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3">
                   {/* Preview Button */}
-                  <button
-                    onClick={() => window.open(video.youtube_url, '_blank', 'noopener,noreferrer')}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     👀 Preview
-                  </button>
+                  </a>
 
                   {/* Add to Library Button */}
                   {user ? (
