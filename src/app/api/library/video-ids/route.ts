@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 /**
  * GET endpoint to retrieve user's library video IDs for filtering search results
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Get only youtube_id from user's library for performance
-    const { data: songs, error: fetchError } = await supabase
+    const { data: songs, error: fetchError } = await supabaseAdmin
       .from('user_songs')
       .select('youtube_id')
       .eq('user_id', userId)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { 
   extractVideoId, 
   extractPlaylistId, 
@@ -18,7 +18,7 @@ import { VideoInfo } from '@/lib/youtube';
  */
 async function getUserLibraryVideoIds(userId: string): Promise<string[]> {
   try {
-    const { data: songs, error } = await supabase
+    const { data: songs, error } = await supabaseAdmin
       .from('user_songs')
       .select('youtube_id')
       .eq('user_id', userId)

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { VideoInfo } from '@/lib/youtube';
 
 interface AddToLibraryRequest {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AddToLibr
 
     // Check for existing songs in user's library
     const videoIds = songs.map(song => song.youtube_id);
-    const { data: existingSongs, error: checkError } = await supabase
+    const { data: existingSongs, error: checkError } = await supabaseAdmin
       .from('user_songs')
       .select('youtube_id')
       .eq('user_id', userId)
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AddToLibr
     }));
 
     // Insert new songs
-    const { data: insertedSongs, error: insertError } = await supabase
+    const { data: insertedSongs, error: insertError } = await supabaseAdmin
       .from('user_songs')
       .insert(songsToInsert)
       .select('youtube_id');
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const offset = (page - 1) * limit;
 
     // Get user's library
-    const { data: songs, error: fetchError, count } = await supabase
+    const { data: songs, error: fetchError, count } = await supabaseAdmin
       .from('user_songs')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
