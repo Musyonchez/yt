@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from './AuthProvider';
 import { VideoInfo } from '@/lib/youtube';
@@ -25,6 +25,15 @@ export default function SearchResults({
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
   const [addingToLibrary, setAddingToLibrary] = useState<Set<string>>(new Set());
   const [addedToLibrary, setAddedToLibrary] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset pagination when results change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedVideos(new Set());
+    setAddedToLibrary(new Set());
+  }, [results]);
 
   const handleSelectVideo = (videoId: string) => {
     const newSelected = new Set(selectedVideos);
@@ -36,12 +45,29 @@ export default function SearchResults({
     setSelectedVideos(newSelected);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageResults = results.slice(startIndex, endIndex);
+
   const handleSelectAll = () => {
-    if (selectedVideos.size === results.length) {
-      setSelectedVideos(new Set());
+    if (selectedVideos.size === currentPageResults.length) {
+      // Deselect current page
+      const newSelected = new Set(selectedVideos);
+      currentPageResults.forEach(r => newSelected.delete(r.youtube_id));
+      setSelectedVideos(newSelected);
     } else {
-      setSelectedVideos(new Set(results.map(r => r.youtube_id)));
+      // Select current page
+      const newSelected = new Set(selectedVideos);
+      currentPageResults.forEach(r => newSelected.add(r.youtube_id));
+      setSelectedVideos(newSelected);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAddToLibrary = async (videoId: string) => {
@@ -181,7 +207,7 @@ export default function SearchResults({
                 onClick={handleSelectAll}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                {selectedVideos.size === results.length ? 'Deselect All' : 'Select All'}
+                {selectedVideos.size === currentPageResults.length ? 'Deselect Page' : 'Select Page'}
               </button>
               
               {selectedVideos.size > 0 && (
@@ -211,7 +237,7 @@ export default function SearchResults({
               onClick={handleSelectAll}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              {selectedVideos.size === results.length ? 'Deselect All' : 'Select All'}
+              {selectedVideos.size === currentPageResults.length ? 'Deselect Page' : 'Select Page'}
             </button>
             
             {selectedVideos.size > 0 && (
@@ -226,9 +252,21 @@ export default function SearchResults({
         )}
       </div>
 
+      {/* Pagination Info */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center text-sm text-gray-600">
+          <span>
+            Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length} results
+          </span>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+      )}
+
       {/* Results List */}
       <div className="space-y-4">
-        {results.map((video) => (
+        {currentPageResults.map((video) => (
           <div
             key={video.youtube_id}
             className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
@@ -239,7 +277,7 @@ export default function SearchResults({
           >
             <div className="flex space-x-4">
               {/* Checkbox for multi-select */}
-              {user && results.length > 1 && (
+              {user && currentPageResults.length > 1 && (
                 <div className="flex-shrink-0 pt-2">
                   <input
                     type="checkbox"
@@ -352,12 +390,41 @@ export default function SearchResults({
         ))}
       </div>
 
-      {/* Results Footer */}
-      {results.length > 5 && (
-        <div className="text-center py-4">
-          <p className="text-gray-600">
-            Showing {results.length} results
-          </p>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 py-6">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+          
+          {/* Page numbers */}
+          <div className="flex space-x-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`px-3 py-2 rounded-lg transition-colors ${
+                  page === currentPage
+                    ? 'bg-black text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>
