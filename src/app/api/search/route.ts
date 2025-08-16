@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
   try {
     const { query, type } = await request.json();
 
+    console.log('Search API called with:', { query, type });
+
     if (!query || typeof query !== 'string') {
       return NextResponse.json(
         { error: 'Query is required' },
@@ -25,6 +27,19 @@ export async function POST(request: NextRequest) {
 
     const sanitizedQuery = sanitizeSearchInput(query);
     const searchType = type || determineSearchType(sanitizedQuery);
+
+    console.log('Determined search type:', searchType, 'for query:', sanitizedQuery);
+
+    // Check if YouTube API key is configured
+    if (!process.env.YOUTUBE_API_KEY) {
+      console.error('YouTube API key not configured');
+      return NextResponse.json(
+        { error: 'YouTube API not configured. Please add YOUTUBE_API_KEY to environment variables.' },
+        { status: 500 }
+      );
+    }
+
+    console.log('YouTube API key found, proceeding with search...');
 
     switch (searchType) {
       case 'video':
@@ -42,7 +57,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Search API error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
@@ -93,6 +108,8 @@ async function handleVideoSearch(url: string): Promise<NextResponse> {
 async function handlePlaylistSearch(url: string): Promise<NextResponse> {
   const playlistId = extractPlaylistId(url);
   
+  console.log('Playlist search - URL:', url, 'Extracted ID:', playlistId);
+  
   if (!playlistId) {
     return NextResponse.json(
       { error: 'Invalid YouTube playlist URL' },
@@ -101,7 +118,9 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
   }
 
   try {
+    console.log('Calling YouTube API for playlist:', playlistId);
     const playlistData = await getYouTubePlaylistVideos(playlistId);
+    console.log('YouTube API response:', playlistData);
 
     return NextResponse.json({
       type: 'playlist',
@@ -110,6 +129,7 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
     });
   } catch (error) {
     console.error('Playlist search error:', error);
+    console.error('Error details:', error instanceof Error ? error.stack : error);
     
     // Check if it's an API key issue
     if (error instanceof Error && error.message.includes('API key')) {
@@ -120,7 +140,7 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
     }
     
     return NextResponse.json(
-      { error: 'Failed to fetch playlist information' },
+      { error: `Failed to fetch playlist information: ${error instanceof Error ? error.message : 'Unknown error'}` },
       { status: 500 }
     );
   }
