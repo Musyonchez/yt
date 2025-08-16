@@ -24,6 +24,7 @@ export default function SearchResults({
   const { user } = useAuth();
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
   const [addingToLibrary, setAddingToLibrary] = useState<Set<string>>(new Set());
+  const [addedToLibrary, setAddedToLibrary] = useState<Set<string>>(new Set());
 
   const handleSelectVideo = (videoId: string) => {
     const newSelected = new Set(selectedVideos);
@@ -76,6 +77,9 @@ export default function SearchResults({
       // Show success message
       console.log('Added to library:', data.message);
       
+      // Mark as successfully added to library
+      setAddedToLibrary(prev => new Set(prev).add(videoId));
+      
       // TODO: Show toast notification
       // toast.success(data.message);
       
@@ -116,6 +120,11 @@ export default function SearchResults({
       }
 
       console.log('Bulk added to library:', data.message);
+      
+      // Mark all selected songs as added to library
+      selectedVideos.forEach(videoId => {
+        setAddedToLibrary(prev => new Set(prev).add(videoId));
+      });
       
       // Clear selection after successful bulk add
       setSelectedVideos(new Set());
@@ -310,14 +319,20 @@ export default function SearchResults({
                   {user ? (
                     <button
                       onClick={() => handleAddToLibrary(video.youtube_id)}
-                      disabled={addingToLibrary.has(video.youtube_id)}
-                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={addingToLibrary.has(video.youtube_id) || addedToLibrary.has(video.youtube_id)}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        addedToLibrary.has(video.youtube_id)
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-black text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed'
+                      }`}
                     >
                       {addingToLibrary.has(video.youtube_id) ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span>Adding...</span>
                         </div>
+                      ) : addedToLibrary.has(video.youtube_id) ? (
+                        '✓ Added to Library'
                       ) : (
                         '➕ Add to Library'
                       )}
