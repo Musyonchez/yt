@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="flex items-center mb-4">
               <Image
-                src="/logo.png"
+                src="/logo-black.png"
                 alt="MP3 Ninja"
                 width={100}
                 height={32}
@@ -49,16 +49,6 @@ export default function Footer() {
               Product
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  How It Works
-                </Link>
-              </li>
               <li>
                 <Link href="/api-docs" className="text-gray-600 hover:text-gray-900 transition-colors">
                   API Docs

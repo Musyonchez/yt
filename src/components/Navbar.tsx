@@ -15,7 +15,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.png"
+                src="/logo-black.png"
                 alt="MP3 Ninja"
                 width={120}
                 height={40}
@@ -27,25 +27,7 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 
-              href="#features" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-            >
-              Features
-            </Link>
-            <Link 
-              href="#how-it-works" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-            >
-              How It Works
-            </Link>
-            <Link 
-              href="/login" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link 
-              href="/signup" 
+              href="/get-started" 
               className="bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
               Get Started
@@ -74,28 +56,7 @@ export default function Navbar() {
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-4">
               <Link 
-                href="#features" 
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Features
-              </Link>
-              <Link 
-                href="#how-it-works" 
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                How It Works
-              </Link>
-              <Link 
-                href="/login" 
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </Link>
-              <Link 
-                href="/signup" 
+                href="/get-started" 
                 className="bg-black text-white px-6 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors inline-block text-center"
                 onClick={() => setIsMenuOpen(false)}
               >
