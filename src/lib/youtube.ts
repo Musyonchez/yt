@@ -165,10 +165,11 @@ export function formatViewCount(count: number): string {
  * Determine search type from input string
  */
 export function determineSearchType(input: string): 'video' | 'playlist' | 'text' {
-  if (isValidVideoUrl(input)) {
-    return 'video';
-  } else if (isValidPlaylistUrl(input)) {
+  // Check for playlist first (URLs can have both video and playlist parameters)
+  if (isValidPlaylistUrl(input)) {
     return 'playlist';
+  } else if (isValidVideoUrl(input)) {
+    return 'video';
   } else {
     return 'text';
   }

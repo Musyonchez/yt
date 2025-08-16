@@ -148,6 +148,11 @@ export async function getYouTubePlaylistVideos(playlistId: string): Promise<Play
     throw new Error('YouTube API key not configured');
   }
 
+  // Check for unsupported playlist types
+  if (playlistId.startsWith('RD')) {
+    throw new Error('Auto-generated playlists (Mix, Radio) are not supported by the YouTube Data API. Please use a regular playlist URL.');
+  }
+
   try {
     // Get playlist info
     const playlistResponse = await youtube.playlists.list({
