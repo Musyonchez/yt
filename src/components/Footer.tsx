@@ -52,8 +52,18 @@ export default function Footer() {
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/api-docs" className="text-gray-600 hover:text-gray-900 transition-colors">
-                    API Docs
+                  <Link href="/search" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Search Music
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/discover" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Discover
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="text-gray-600 hover:text-gray-900 transition-colors">
+                    Get Started
                   </Link>
                 </li>
               </ul>
@@ -66,14 +76,9 @@ export default function Footer() {
               </h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/help" className="text-gray-600 hover:text-gray-900 transition-colors">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  <a href="mailto:support@mp3ninja.com" className="text-gray-600 hover:text-gray-900 transition-colors">
                     Contact Us
-                  </Link>
+                  </a>
                 </li>
                 <li>
                   <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
@@ -83,6 +88,11 @@ export default function Footer() {
                 <li>
                   <Link href="/terms" className="text-gray-600 hover:text-gray-900 transition-colors">
                     Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="https://github.com/Musyonchez/yt" className="text-gray-600 hover:text-gray-900 transition-colors" target="_blank" rel="noopener noreferrer">
+                    GitHub
                   </Link>
                 </li>
               </ul>
