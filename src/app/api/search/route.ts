@@ -140,7 +140,7 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
 
 async function handleTextSearch(query: string): Promise<NextResponse> {
   try {
-    const searchResults = await searchYouTubeVideos(query, 10);
+    const searchResults = await searchYouTubeVideos(query, 25);
 
     return NextResponse.json({
       type: 'text',
