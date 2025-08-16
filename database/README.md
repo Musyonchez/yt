@@ -41,8 +41,15 @@ Execute these scripts **in order**:
 -- This completely resets all policies and uses safe functions
 ```
 
+#### Step 6: Enable Auto-Username Generation (RECOMMENDED!)
+```sql
+-- Copy and paste the contents of 06_auto_username_generation.sql
+-- This auto-generates usernames from email prefixes on first login
+-- Examples: john.doe@gmail.com → johndoe, test@example.com → test
+```
+
 ### 3. Verify Setup
-After running all four scripts, verify the tables exist:
+After running the scripts, verify the tables exist:
 ```sql
 SELECT table_name 
 FROM information_schema.tables 
@@ -90,6 +97,8 @@ AND table_name IN ('users', 'songs', 'user_downloads', 'admin_actions', 'friends
 ✅ **Friend visibility** - friends can see each other's public downloads
 ✅ **Admin override** - admins can view/modify all data
 ✅ **Auto-user creation** - custom user record created on auth signup
+✅ **Auto-username generation** - usernames auto-generated from email prefix
+✅ **Username uniqueness** - automatic numbering ensures unique usernames
 
 ### Performance Optimizations
 
