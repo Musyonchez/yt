@@ -29,7 +29,7 @@ export default function NotFound() {
 
         {/* Description */}
         <p className="text-xl text-gray-600 mb-8 max-w-md mx-auto">
-          The page you're looking for has disappeared with ninja-like stealth. 
+          The page you&apos;re looking for has disappeared with ninja-like stealth. 
           It might have been moved, deleted, or never existed in the first place.
         </p>
 

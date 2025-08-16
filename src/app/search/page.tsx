@@ -180,7 +180,7 @@ export default function SearchPage() {
                 </h3>
                 <p className="text-gray-600">
                   Search YouTube by keywords, artist names, or song titles. 
-                  Use quotes for exact phrases or add filters like "official music video" 
+                  Use quotes for exact phrases or add filters like &quot;official music video&quot; 
                   for better results.
                 </p>
               </div>
@@ -222,7 +222,7 @@ export default function SearchPage() {
                 <strong>Sign in to save songs to your library!</strong>
               </p>
               <p className="text-yellow-700 mb-4">
-                You can search without signing in, but you'll need an account to save songs for later.
+                You can search without signing in, but you&apos;ll need an account to save songs for later.
               </p>
               <a
                 href="/login"

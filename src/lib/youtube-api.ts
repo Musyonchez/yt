@@ -57,12 +57,16 @@ export async function searchYouTubeVideos(
     const videoIds = response.data.items.map(item => item.id?.videoId).filter(Boolean);
     const videoDetails = await getVideoDetails(videoIds as string[]);
 
-    const results: VideoInfo[] = response.data.items.map(item => {
-      const snippet = item.snippet!;
-      const videoId = item.id?.videoId!;
+    const results: VideoInfo[] = [];
+    
+    for (const item of response.data.items) {
+      const snippet = item.snippet;
+      const videoId = item.id?.videoId;
+      if (!snippet || !videoId) continue;
+      
       const details = videoDetails.find(v => v.youtube_id === videoId);
       
-      return {
+      results.push({
         youtube_id: videoId,
         youtube_url: `https://www.youtube.com/watch?v=${videoId}`,
         title: snippet.title || 'Unknown Title',
@@ -72,8 +76,8 @@ export async function searchYouTubeVideos(
         view_count: details?.view_count || 0,
         upload_date: snippet.publishedAt || new Date().toISOString(),
         channel_name: snippet.channelTitle || 'Unknown Channel'
-      };
-    });
+      });
+    }
 
     return {
       results,
@@ -170,7 +174,7 @@ export async function getYouTubePlaylistVideos(playlistId: string): Promise<Play
         results: [],
         playlistInfo: {
           title: playlist.snippet?.title || 'Unknown Playlist',
-          description: playlist.snippet?.description,
+          description: playlist.snippet?.description || undefined,
           video_count: 0
         }
       };
@@ -183,12 +187,16 @@ export async function getYouTubePlaylistVideos(playlistId: string): Promise<Play
 
     const videoDetails = await getVideoDetails(videoIds);
 
-    const results: VideoInfo[] = itemsResponse.data.items.map(item => {
-      const snippet = item.snippet!;
-      const videoId = snippet.resourceId?.videoId!;
+    const results: VideoInfo[] = [];
+    
+    for (const item of itemsResponse.data.items) {
+      const snippet = item.snippet;
+      const videoId = snippet?.resourceId?.videoId;
+      if (!snippet || !videoId) continue;
+      
       const details = videoDetails.find(v => v.youtube_id === videoId);
       
-      return {
+      results.push({
         youtube_id: videoId,
         youtube_url: `https://www.youtube.com/watch?v=${videoId}`,
         title: snippet.title || 'Unknown Title',
@@ -198,14 +206,14 @@ export async function getYouTubePlaylistVideos(playlistId: string): Promise<Play
         view_count: details?.view_count || 0,
         upload_date: snippet.publishedAt || new Date().toISOString(),
         channel_name: snippet.videoOwnerChannelTitle || snippet.channelTitle || 'Unknown Channel'
-      };
-    });
+      });
+    }
 
     return {
       results,
       playlistInfo: {
         title: playlist.snippet?.title || 'Unknown Playlist',
-        description: playlist.snippet?.description,
+        description: playlist.snippet?.description || undefined,
         video_count: results.length
       }
     };

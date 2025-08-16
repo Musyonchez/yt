@@ -3,8 +3,7 @@ import {
   extractVideoId, 
   extractPlaylistId, 
   determineSearchType,
-  sanitizeSearchInput,
-  VideoInfo 
+  sanitizeSearchInput
 } from '@/lib/youtube';
 import {
   searchYouTubeVideos,
