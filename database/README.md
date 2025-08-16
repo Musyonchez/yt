@@ -22,8 +22,14 @@ Execute these scripts **in order**:
 -- This adds RLS policies and auto-user creation trigger
 ```
 
+#### Step 3: Fix RLS Policy Issues (IMPORTANT!)
+```sql
+-- Copy and paste the contents of 03_fix_rls_policies.sql
+-- This fixes infinite recursion errors in user policies
+```
+
 ### 3. Verify Setup
-After running both scripts, verify the tables exist:
+After running all three scripts, verify the tables exist:
 ```sql
 SELECT table_name 
 FROM information_schema.tables 
@@ -86,8 +92,13 @@ AND table_name IN ('users', 'songs', 'user_downloads', 'admin_actions', 'friends
 - Check that the script executed without errors
 - Verify tables exist in Supabase Table Editor
 
+### Error: "infinite recursion detected in policy for relation 'users'"
+- Run `03_fix_rls_policies.sql` to fix the policy recursion
+- This replaces problematic policies with corrected versions
+- Restart your Next.js app after applying the fix
+
 ### Error: "RLS policy violation" 
-- Make sure you ran `02_row_level_security.sql` 
+- Make sure you ran both `02_row_level_security.sql` and `03_fix_rls_policies.sql`
 - Check that RLS policies are enabled
 - Verify user has proper permissions
 
