@@ -7,9 +7,9 @@ import {
 } from '@/lib/youtube';
 import {
   searchYouTubeVideos,
-  getYouTubeVideoInfo,
-  getYouTubePlaylistVideos
+  getYouTubeVideoInfo
 } from '@/lib/youtube-api';
+import { getPlaylistWithYtDlp } from '@/lib/ytdlp';
 
 export async function POST(request: NextRequest) {
   try {
@@ -117,9 +117,9 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
   }
 
   try {
-    console.log('Calling YouTube API for playlist:', playlistId);
-    const playlistData = await getYouTubePlaylistVideos(playlistId);
-    console.log('YouTube API response:', playlistData);
+    console.log('Using yt-dlp for playlist:', playlistId);
+    const playlistData = await getPlaylistWithYtDlp(url, 50);
+    console.log('yt-dlp response:', `${playlistData.results.length} videos extracted`);
 
     return NextResponse.json({
       type: 'playlist',
@@ -129,14 +129,6 @@ async function handlePlaylistSearch(url: string): Promise<NextResponse> {
   } catch (error) {
     console.error('Playlist search error:', error);
     console.error('Error details:', error instanceof Error ? error.stack : error);
-    
-    // Check if it's an API key issue
-    if (error instanceof Error && error.message.includes('API key')) {
-      return NextResponse.json(
-        { error: 'YouTube API not configured. Please add YOUTUBE_API_KEY to environment variables.' },
-        { status: 500 }
-      );
-    }
     
     return NextResponse.json(
       { error: `Failed to fetch playlist information: ${error instanceof Error ? error.message : 'Unknown error'}` },
