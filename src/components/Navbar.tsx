@@ -87,14 +87,13 @@ export default function Navbar() {
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                    <div className="px-4 py-2 border-b border-gray-100">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900">
                         {user.display_name || 'User'}
                       </p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
                       {user.username && (
-                        <p className="text-xs text-gray-400">@{user.username}</p>
+                        <p className="text-sm text-gray-500">@{user.username}</p>
                       )}
                     </div>
                     
@@ -210,9 +209,8 @@ export default function Navbar() {
                         <p className="text-sm font-medium text-gray-900">
                           {user.display_name || 'User'}
                         </p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
                         {user.username && (
-                          <p className="text-xs text-gray-400">@{user.username}</p>
+                          <p className="text-sm text-gray-500">@{user.username}</p>
                         )}
                       </div>
                     </div>
