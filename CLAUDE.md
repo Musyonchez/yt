@@ -86,6 +86,106 @@ MP3 Ninja - A professional SaaS-grade YouTube MP3 download platform with social 
 - **Friends**: Social features that feel natural, not forced
 - **Profile**: Professional user profiles with privacy controls
 
+## Database Architecture
+
+### Current Implementation Status
+- ✅ **Authentication System**: Supabase + Google OAuth fully implemented
+- ✅ **User Management**: Admin capabilities, profile system, RLS policies
+- ✅ **Landing Page**: Professional SaaS-grade interface with branding
+- ✅ **Navigation**: Clean navbar with authentication-aware routing
+- 🔄 **Search System**: In development (3 search methods)
+- ❌ **Library System**: Requires new database schema
+- ❌ **Download System**: Separate from library functionality
+
+### New Database Design (Library vs Downloads)
+
+**Philosophy**: Separate user's "saved/bookmarked songs" (library) from "actual downloaded MP3 files" (downloads)
+
+```sql
+-- User's Library (bookmarked/saved songs for later)
+user_library (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  youtube_id TEXT NOT NULL,
+  youtube_url TEXT,
+  title TEXT,
+  artist TEXT,
+  duration TEXT,
+  thumbnail_url TEXT,
+  added_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, youtube_id)  -- One song per user in library
+)
+
+-- User's Downloads (actual MP3 files on device)
+user_downloads (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  youtube_id TEXT NOT NULL,
+  youtube_url TEXT,
+  title TEXT,
+  artist TEXT,
+  duration TEXT,
+  thumbnail_url TEXT,
+  file_path TEXT,              -- Path to actual MP3 file
+  file_size BIGINT,            -- File size in bytes
+  download_quality TEXT,       -- '128kbps', '320kbps', etc.
+  downloaded_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, youtube_id)  -- One download per user per song
+)
+```
+
+### User Flow Design
+1. **Search** → Find YouTube videos (3 methods: video URL, playlist URL, word search)
+2. **Add to Library** → Save metadata to `user_library` (like bookmarking)
+3. **Browse Library** → View saved songs, organize, curate collection
+4. **Download** → Process MP3 and save to `user_downloads` + actual file
+
+### Search Functionality Requirements
+
+**Three Search Methods** (all lead to same results interface):
+
+1. **Video URL Search**:
+   - Parse single YouTube video URLs
+   - Support youtube.com, youtu.be, m.youtube.com formats
+   - Extract video metadata and display as single result
+   - Validate URL and check availability
+
+2. **Playlist URL Search**:
+   - Parse YouTube playlist URLs
+   - Extract all videos from playlist
+   - Display paginated results (50 videos per page)
+   - Show playlist info + individual video cards
+   - Handle large playlists efficiently
+
+3. **Word/Text Search**:
+   - YouTube Data API v3 integration
+   - Real-time search suggestions
+   - Filtering: duration, upload date, view count
+   - Sorting: relevance, view count, newest, duration
+   - Search history for logged-in users
+
+**Search Results Interface**:
+```typescript
+// Unified search result component for all 3 methods
+interface SearchResult {
+  youtube_id: string;
+  youtube_url: string;
+  title: string;
+  artist: string;
+  duration: string;
+  thumbnail_url: string;
+  view_count: number;
+  upload_date: string;
+  channel_name: string;
+}
+
+// Search result actions
+- "Add to Library" button (primary action)
+- "Already in Library" state (disabled with checkmark)
+- Preview thumbnail (YouTube embed on click)
+- Bulk selection for multiple additions
+```
+
 ## Technical Requirements
 
 ### 1. Performance Standards
@@ -95,14 +195,16 @@ MP3 Ninja - A professional SaaS-grade YouTube MP3 download platform with social 
 - **Bundle Size**: Optimized JavaScript bundles under 250KB
 - **Image Optimization**: WebP format, proper sizing, lazy loading
 - **Caching**: Aggressive caching of static assets and API responses
+- **Search Performance**: Results in under 500ms, cached popular queries
 
 ### 2. Security & Privacy
-- **Authentication**: Secure Google OAuth implementation
-- **Data Protection**: Proper data encryption and secure storage
+- **Authentication**: Secure Google OAuth implementation ✅
+- **Data Protection**: Proper data encryption and secure storage ✅
 - **Privacy Controls**: User control over data sharing and visibility
 - **HTTPS**: All communications over secure connections
 - **Input Validation**: Server-side validation for all user inputs
 - **Rate Limiting**: Prevent abuse with proper rate limiting
+- **URL Validation**: Secure YouTube URL parsing and sanitization
 
 ### 3. Scalability Considerations
 - **Database Performance**: Proper indexing and query optimization
@@ -111,6 +213,7 @@ MP3 Ninja - A professional SaaS-grade YouTube MP3 download platform with social 
 - **Error Recovery**: Graceful degradation and retry mechanisms
 - **Monitoring**: Proper logging and error tracking
 - **Resource Management**: Efficient memory and CPU usage
+- **YouTube API Limits**: Rate limiting, caching, fallback strategies
 
 ## Development Workflow
 
@@ -130,15 +233,24 @@ MP3 Ninja - A professional SaaS-grade YouTube MP3 download platform with social 
 - **Performance Testing**: Monitor bundle size and loading times
 - **User Testing**: Get feedback on usability and flow
 
-### 3. Dashboard & Admin Implementation
+### 3. Search Implementation Priorities
+- **Search Page**: `/search` with three input methods (tabs or unified interface)
+- **URL Parsing**: Robust YouTube URL validation and metadata extraction
+- **API Integration**: YouTube Data API v3 with rate limiting and caching
+- **Results Display**: Unified component for all search types
+- **Library Integration**: "Add to Library" functionality with duplicate checking
+- **Performance**: Search results caching, lazy loading, pagination
+
+### 4. Dashboard & Admin Implementation
 - **User Dashboard**: Paginated download history with search and date filtering
-- **Admin Panel**: Secure admin-only access with user management capabilities
+- **Library Page**: User's saved songs with organization and management
+- **Admin Panel**: Secure admin-only access with user management capabilities ✅
 - **Data Tables**: Professional table designs with sorting and filtering
 - **Action Modals**: Confirmation dialogs for destructive actions (ban/delete)
 - **Audit Logging**: Track all admin actions for accountability
-- **Role-based Access**: Proper authentication guards for admin routes
+- **Role-based Access**: Proper authentication guards for admin routes ✅
 
-### 4. Quality Assurance
+### 5. Quality Assurance
 - **Code Review**: Self-review before committing
 - **Accessibility**: Test with screen readers and keyboard navigation
 - **Performance**: Lighthouse audits for every major feature
