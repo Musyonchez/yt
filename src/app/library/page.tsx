@@ -41,6 +41,7 @@ export default function LibraryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSongs, setSelectedSongs] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState<Set<string>>(new Set());
+  const [isDownloading, setIsDownloading] = useState<Set<string>>(new Set());
 
   const itemsPerPage = 20;
 
@@ -206,6 +207,87 @@ export default function LibraryPage() {
     }
   };
 
+  // Handle download song
+  const handleDownloadSong = async (songId: string) => {
+    if (!user) return;
+
+    setIsDownloading(prev => new Set(prev).add(songId));
+    
+    try {
+      const response = await fetch('/api/library/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: [songId],
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to download song');
+      }
+
+      console.log('Song downloaded:', data.message);
+      
+      // TODO: Show toast notification
+      // toast.success(data.message);
+      
+    } catch (error) {
+      console.error('Error downloading song:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to download song');
+    } finally {
+      setIsDownloading(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(songId);
+        return newSet;
+      });
+    }
+  };
+
+  // Handle bulk download
+  const handleBulkDownload = async () => {
+    if (!user || selectedSongs.size === 0) return;
+
+    const songIdsToDownload = Array.from(selectedSongs);
+    
+    try {
+      const response = await fetch('/api/library/download', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: songIdsToDownload,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to download songs');
+      }
+
+      console.log('Bulk download completed:', data.message);
+      
+      // Clear selection
+      setSelectedSongs(new Set());
+      
+      // TODO: Show toast notification
+      // toast.success(data.message);
+      
+    } catch (error) {
+      console.error('Error bulk downloading songs:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to download songs');
+    }
+  };
+
   // Redirect to login if not authenticated
   if (!user) {
     return (
@@ -277,12 +359,20 @@ export default function LibraryPage() {
                 </button>
                 
                 {selectedSongs.size > 0 && (
-                  <button
-                    onClick={handleBulkDelete}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    🗑️ Delete {selectedSongs.size}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleBulkDownload}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      ⬇️ Download {selectedSongs.size}
+                    </button>
+                    <button
+                      onClick={handleBulkDelete}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    >
+                      🗑️ Delete {selectedSongs.size}
+                    </button>
+                  </>
                 )}
               </div>
             )}
@@ -419,6 +509,22 @@ export default function LibraryPage() {
                       >
                         👀 Preview
                       </a>
+
+                      {/* Download Button */}
+                      <button
+                        onClick={() => handleDownloadSong(song.id)}
+                        disabled={isDownloading.has(song.id)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isDownloading.has(song.id) ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Downloading...</span>
+                          </div>
+                        ) : (
+                          '⬇️ Download'
+                        )}
+                      </button>
 
                       {/* Delete Button */}
                       <button
