@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useAuth } from './AuthProvider';
 import { VideoInfo } from '@/lib/youtube';
@@ -24,6 +24,16 @@ export default function SearchResults({
   const { user } = useAuth();
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set());
   const [addingToLibrary, setAddingToLibrary] = useState<Set<string>>(new Set());
+  const [addedToLibrary, setAddedToLibrary] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset pagination when results change
+  useEffect(() => {
+    setCurrentPage(1);
+    setSelectedVideos(new Set());
+    setAddedToLibrary(new Set());
+  }, [results]);
 
   const handleSelectVideo = (videoId: string) => {
     const newSelected = new Set(selectedVideos);
@@ -35,12 +45,29 @@ export default function SearchResults({
     setSelectedVideos(newSelected);
   };
 
+  // Calculate pagination
+  const totalPages = Math.ceil(results.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPageResults = results.slice(startIndex, endIndex);
+
   const handleSelectAll = () => {
-    if (selectedVideos.size === results.length) {
-      setSelectedVideos(new Set());
+    if (selectedVideos.size === currentPageResults.length) {
+      // Deselect current page
+      const newSelected = new Set(selectedVideos);
+      currentPageResults.forEach(r => newSelected.delete(r.youtube_id));
+      setSelectedVideos(newSelected);
     } else {
-      setSelectedVideos(new Set(results.map(r => r.youtube_id)));
+      // Select current page
+      const newSelected = new Set(selectedVideos);
+      currentPageResults.forEach(r => newSelected.add(r.youtube_id));
+      setSelectedVideos(newSelected);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleAddToLibrary = async (videoId: string) => {
@@ -50,17 +77,42 @@ export default function SearchResults({
       return;
     }
 
+    const video = results.find(v => v.youtube_id === videoId);
+    if (!video) return;
+
     setAddingToLibrary(prev => new Set(prev).add(videoId));
     
     try {
-      // TODO: Implement actual API call to add to library
-      console.log('Adding to library:', videoId);
+      const response = await fetch('/api/library/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songs: [video],
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add to library');
+      }
+
+      // Show success message
+      console.log('Added to library:', data.message);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mark as successfully added to library
+      setAddedToLibrary(prev => new Set(prev).add(videoId));
+      
+      // TODO: Show toast notification
+      // toast.success(data.message);
       
     } catch (error) {
       console.error('Error adding to library:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to add to library');
     } finally {
       setAddingToLibrary(prev => {
         const newSet = new Set(prev);
@@ -73,9 +125,44 @@ export default function SearchResults({
   const handleBulkAddToLibrary = async () => {
     if (!user || selectedVideos.size === 0) return;
 
-    // TODO: Implement bulk add to library
-    console.log('Bulk adding to library:', Array.from(selectedVideos));
-    setSelectedVideos(new Set());
+    const selectedSongs = results.filter(video => selectedVideos.has(video.youtube_id));
+    
+    try {
+      const response = await fetch('/api/library/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songs: selectedSongs,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add songs to library');
+      }
+
+      console.log('Bulk added to library:', data.message);
+      
+      // Mark all selected songs as added to library
+      selectedVideos.forEach(videoId => {
+        setAddedToLibrary(prev => new Set(prev).add(videoId));
+      });
+      
+      // Clear selection after successful bulk add
+      setSelectedVideos(new Set());
+      
+      // TODO: Show toast notification
+      // toast.success(data.message);
+      
+    } catch (error) {
+      console.error('Error bulk adding to library:', error);
+      // TODO: Show error toast
+      // toast.error(error.message || 'Failed to add songs to library');
+    }
   };
 
   if (isLoading) {
@@ -120,7 +207,7 @@ export default function SearchResults({
                 onClick={handleSelectAll}
                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                {selectedVideos.size === results.length ? 'Deselect All' : 'Select All'}
+                {selectedVideos.size === currentPageResults.length ? 'Deselect Page' : 'Select Page'}
               </button>
               
               {selectedVideos.size > 0 && (
@@ -150,7 +237,7 @@ export default function SearchResults({
               onClick={handleSelectAll}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
-              {selectedVideos.size === results.length ? 'Deselect All' : 'Select All'}
+              {selectedVideos.size === currentPageResults.length ? 'Deselect Page' : 'Select Page'}
             </button>
             
             {selectedVideos.size > 0 && (
@@ -165,9 +252,21 @@ export default function SearchResults({
         )}
       </div>
 
+      {/* Pagination Info */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center text-sm text-gray-600">
+          <span>
+            Showing {startIndex + 1}-{Math.min(endIndex, results.length)} of {results.length} results
+          </span>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+        </div>
+      )}
+
       {/* Results List */}
       <div className="space-y-4">
-        {results.map((video) => (
+        {currentPageResults.map((video) => (
           <div
             key={video.youtube_id}
             className={`bg-white rounded-lg p-6 shadow-sm border transition-all ${
@@ -178,7 +277,7 @@ export default function SearchResults({
           >
             <div className="flex space-x-4">
               {/* Checkbox for multi-select */}
-              {user && results.length > 1 && (
+              {user && currentPageResults.length > 1 && (
                 <div className="flex-shrink-0 pt-2">
                   <input
                     type="checkbox"
@@ -245,25 +344,33 @@ export default function SearchResults({
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3">
                   {/* Preview Button */}
-                  <button
-                    onClick={() => window.open(video.youtube_url, '_blank', 'noopener,noreferrer')}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  <a
+                    href={video.youtube_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     👀 Preview
-                  </button>
+                  </a>
 
                   {/* Add to Library Button */}
                   {user ? (
                     <button
                       onClick={() => handleAddToLibrary(video.youtube_id)}
-                      disabled={addingToLibrary.has(video.youtube_id)}
-                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={addingToLibrary.has(video.youtube_id) || addedToLibrary.has(video.youtube_id)}
+                      className={`px-4 py-2 rounded-lg transition-colors ${
+                        addedToLibrary.has(video.youtube_id)
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-black text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed'
+                      }`}
                     >
                       {addingToLibrary.has(video.youtube_id) ? (
                         <div className="flex items-center space-x-2">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span>Adding...</span>
                         </div>
+                      ) : addedToLibrary.has(video.youtube_id) ? (
+                        '✓ Added to Library'
                       ) : (
                         '➕ Add to Library'
                       )}
@@ -283,12 +390,55 @@ export default function SearchResults({
         ))}
       </div>
 
-      {/* Results Footer */}
-      {results.length > 5 && (
-        <div className="text-center py-4">
-          <p className="text-gray-600">
-            Showing {results.length} results
-          </p>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex flex-col justify-center items-center gap-6 py-8 pb-12">
+          {/* Navigation Buttons */}
+          <div className="flex items-center space-x-8 mb-4">
+            {/* Previous Button */}
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center justify-center w-12 h-12 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            {/* Page numbers */}
+            <div className="flex items-center space-x-3">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`w-12 h-12 rounded-lg font-semibold transition-all duration-200 border-2 ${
+                    page === currentPage
+                      ? 'bg-black text-white border-black shadow-lg transform scale-105'
+                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300 hover:shadow-md'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            {/* Next Button */}
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center justify-center w-12 h-12 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          
+          {/* Page Info */}
+          <div className="text-sm text-gray-500 font-medium">
+            Page {currentPage} of {totalPages} • {results.length} total results
+          </div>
         </div>
       )}
     </div>

@@ -13,10 +13,21 @@ Professional SaaS-grade YouTube MP3 platform with social features. Multi-user ap
 - **Custom 404**: Ninja-themed error page with helpful navigation
 - **Database Foundation**: RLS policies, auto-user creation, username generation
 - **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **🆕 Search System**: Complete three-method search implementation
+  - Text search: 25 results via YouTube Data API v3
+  - Video URL: Direct video metadata extraction
+  - Playlist URL: yt-dlp subprocess for all playlist types (including Mix/Radio)
+  - Professional UI with bulk selection and preview links
+  - Hybrid API approach for optimal performance and coverage
+- **🆕 Library System**: Complete personal music collection functionality
+  - Add to Library: Individual songs and bulk playlist imports
+  - Smart Filtering: Real-time filtering of search results to hide already-saved songs
+  - Duplicate Detection: Automatic prevention of re-adding existing songs
+  - Performance Optimized: Parallel API calls with video ID-only queries
+  - REST API: Complete endpoints for library management and filtering
 
 ### 🔄 In Development
-- **Search System**: Three-method search (video URL, playlist URL, word search)
-- **Library System**: Personal song collection with "Add to Library" functionality
+- **Library Management UI**: Dedicated library page for viewing and organizing saved songs
 
 ### ❌ Planned Features
 - **Download System**: Actual MP3 file processing and device downloads
@@ -25,13 +36,15 @@ Professional SaaS-grade YouTube MP3 platform with social features. Multi-user ap
 
 ## 🎯 Core Architecture
 
-### Database Design - Library vs Downloads Separation
+### Database Design - Library vs Downloads Separation ✅
 
 **Philosophy**: Separate "saved songs" (library) from "downloaded files" (downloads)
 
+**Implementation**: Unified `user_songs` table with `group_type` field for flexibility
+
 ```sql
--- User's Personal Library (bookmarked songs)
-user_library (
+-- Unified User Songs Table (IMPLEMENTED)
+user_songs (
   id UUID PRIMARY KEY,
   user_id UUID REFERENCES users(id),
   youtube_id TEXT NOT NULL,
@@ -40,27 +53,61 @@ user_library (
   artist TEXT,
   duration TEXT,
   thumbnail_url TEXT,
+  view_count BIGINT,
+  upload_date TIMESTAMP,
+  channel_name TEXT,
+  group_type TEXT, -- 'library', 'downloaded', 'favorites', 'playlist_1', etc.
+  status TEXT, -- 'saved', 'downloaded', 'deleted'
   added_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(user_id, youtube_id)
-)
-
--- User's Downloaded Files (actual MP3s)
-user_downloads (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES users(id),
-  youtube_id TEXT NOT NULL,
-  youtube_url TEXT,
-  title TEXT,
-  artist TEXT,
-  duration TEXT,
-  thumbnail_url TEXT,
-  file_path TEXT,
+  downloaded_at TIMESTAMP,
+  download_url TEXT, -- S3/storage URL for downloaded file
   file_size BIGINT,
-  download_quality TEXT,
-  downloaded_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(user_id, youtube_id)
+  UNIQUE(user_id, youtube_id, group_type)
 )
 
+-- Benefits of Unified Approach:
+-- ✅ Flexible grouping (library, downloads, custom playlists)
+-- ✅ Efficient duplicate detection across all groups
+-- ✅ Single table for all user music data
+-- ✅ Easy migration from library to downloads
+-- ✅ Support for future features (favorites, playlists, etc.)
+```
+
+### 🔌 Current API Endpoints
+
+#### Search API
+```
+POST /api/search
+Body: { query: string, type?: 'video'|'playlist'|'text', userId?: string }
+Response: { type, results: VideoInfo[], playlistInfo?, pageInfo? }
+Features: Real-time library filtering, hybrid YouTube API + yt-dlp
+```
+
+#### Library API
+```
+POST /api/library/add
+Body: { songs: VideoInfo[], userId: string }
+Response: { success, message, added_count, duplicate_count, failed_count }
+Features: Bulk operations, duplicate detection, comprehensive stats
+
+GET /api/library/add?userId=string&page=1&limit=20
+Response: { songs: UserSong[], pagination }
+Features: Paginated library retrieval
+
+GET /api/library/video-ids?userId=string
+Response: { video_ids: string[] }
+Features: Fast lookup for search result filtering
+```
+
+#### Testing API
+```
+POST /api/test-ytdlp
+Body: { url: string }
+Response: { success, result: YtDlpOutput[] }
+Features: Test yt-dlp subprocess functionality
+```
+
+```sql
 -- Existing: User Profiles
 users (
   id UUID PRIMARY KEY REFERENCES auth.users(id),

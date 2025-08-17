@@ -36,7 +36,8 @@ export default function SearchPage() {
         },
         body: JSON.stringify({
           query: searchInput,
-          type: finalSearchType
+          type: finalSearchType,
+          userId: user?.id
         }),
       });
 
