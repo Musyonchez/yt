@@ -57,6 +57,17 @@ export default function Navbar() {
             >
               Search
             </Link>
+            
+            {/* User-specific links */}
+            {user && (
+              <Link 
+                href="/library" 
+                className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              >
+                Library
+              </Link>
+            )}
+            
             <Link 
               href="/discover" 
               className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
@@ -181,6 +192,18 @@ export default function Navbar() {
               >
                 Search
               </Link>
+              
+              {/* User-specific links */}
+              {user && (
+                <Link 
+                  href="/library" 
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Library
+                </Link>
+              )}
+              
               <Link 
                 href="/discover" 
                 className="text-gray-600 hover:text-gray-900 font-medium transition-colors"

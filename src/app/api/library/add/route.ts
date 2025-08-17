@@ -135,18 +135,28 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get pagination parameters
+    // Get pagination and search parameters
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
+    const search = searchParams.get('search');
     const offset = (page - 1) * limit;
 
-    // Get user's library
-    const { data: songs, error: fetchError, count } = await supabaseAdmin
+    // Build query
+    let query = supabaseAdmin
       .from('user_songs')
       .select('*', { count: 'exact' })
       .eq('user_id', userId)
       .eq('group_type', 'library')
-      .eq('status', 'saved')
+      .eq('status', 'saved');
+
+    // Add search filter if provided
+    if (search && search.trim()) {
+      const searchTerm = search.trim();
+      query = query.or(`title.ilike.%${searchTerm}%,artist.ilike.%${searchTerm}%,channel_name.ilike.%${searchTerm}%`);
+    }
+
+    // Execute query with pagination
+    const { data: songs, error: fetchError, count } = await query
       .order('added_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
