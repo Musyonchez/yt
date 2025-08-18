@@ -18,19 +18,21 @@ import { VideoInfo } from '@/lib/youtube';
  */
 async function getUserLibraryVideoIds(userId: string): Promise<string[]> {
   try {
-    const { data: songs, error } = await supabaseAdmin
+    const { data: userSongs, error } = await supabaseAdmin
       .from('user_songs')
-      .select('youtube_id')
-      .eq('user_id', userId)
-      .eq('group_type', 'library')
-      .eq('status', 'saved');
+      .select(`
+        songs!inner (
+          youtube_id
+        )
+      `)
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error fetching library video IDs:', error);
       return [];
     }
 
-    return songs?.map(song => song.youtube_id) || [];
+    return userSongs?.map(userSong => userSong.songs.youtube_id) || [];
   } catch (error) {
     console.error('Error in getUserLibraryVideoIds:', error);
     return [];

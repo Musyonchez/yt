@@ -35,78 +35,86 @@ export async function POST(request: NextRequest): Promise<NextResponse<AddToLibr
 
     console.log(`Adding ${songs.length} songs to library for user ${userId}`);
 
-    // Check for existing songs in user's library
-    const videoIds = songs.map(song => song.youtube_id);
-    const { data: existingSongs, error: checkError } = await supabaseAdmin
-      .from('user_songs')
-      .select('youtube_id')
-      .eq('user_id', userId)
-      .eq('group_type', 'library')
-      .in('youtube_id', videoIds);
+    let addedCount = 0;
+    let duplicateCount = 0;
+    let failedCount = 0;
 
-    if (checkError) {
-      console.error('Error checking existing songs:', checkError);
-      return NextResponse.json(
-        { success: false, message: 'Database error while checking duplicates', added_count: 0, duplicate_count: 0, failed_count: 0 },
-        { status: 500 }
-      );
+    for (const song of songs) {
+      try {
+        // Step 1: Check if song exists in songs table, if not create it
+        const { data: existingSong, error: upsertError } = await supabaseAdmin
+          .from('songs')
+          .upsert({
+            youtube_id: song.youtube_id,
+            youtube_url: song.youtube_url,
+            title: song.title || 'Unknown Title',
+            artist: song.artist || 'Unknown Artist',
+            duration: song.duration || '0:00',
+            thumbnail_url: song.thumbnail_url || '',
+            view_count: song.view_count || 0,
+            upload_date: song.upload_date || new Date().toISOString(),
+            channel_name: song.channel_name || 'Unknown Channel',
+            total_downloads: 0
+          }, { 
+            onConflict: 'youtube_id',
+            ignoreDuplicates: false 
+          })
+          .select('id')
+          .single();
+
+        if (upsertError || !existingSong) {
+          console.error('Error upserting song:', upsertError);
+          failedCount++;
+          continue;
+        }
+
+        const songId = existingSong.id;
+
+        // Step 2: Check if user already has this song in library
+        const { data: existingUserSong, error: userSongCheckError } = await supabaseAdmin
+          .from('user_songs')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('song_id', songId)
+          .single();
+
+        if (userSongCheckError && userSongCheckError.code !== 'PGRST116') {
+          console.error('Error checking user song:', userSongCheckError);
+          failedCount++;
+          continue;
+        }
+
+        // Step 3: If user doesn't have this song, add to library
+        if (!existingUserSong) {
+          const { error: insertUserSongError } = await supabaseAdmin
+            .from('user_songs')
+            .insert({
+              user_id: userId,
+              song_id: songId
+            });
+
+          if (insertUserSongError) {
+            console.error('Error adding song to user library:', insertUserSongError);
+            failedCount++;
+            continue;
+          }
+
+          addedCount++;
+        } else {
+          duplicateCount++;
+        }
+
+      } catch (error) {
+        console.error('Error processing song:', error);
+        failedCount++;
+      }
     }
 
-    const existingVideoIds = new Set(existingSongs?.map(song => song.youtube_id) || []);
-    const newSongs = songs.filter(song => !existingVideoIds.has(song.youtube_id));
-    const duplicateCount = songs.length - newSongs.length;
-
-    console.log(`Found ${duplicateCount} duplicates, adding ${newSongs.length} new songs`);
-
-    if (newSongs.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: 'All songs are already in your library',
-        added_count: 0,
-        duplicate_count: duplicateCount,
-        failed_count: 0
-      });
-    }
-
-    // Prepare songs for insertion
-    const songsToInsert = newSongs.map(song => ({
-      user_id: userId,
-      youtube_id: song.youtube_id,
-      youtube_url: song.youtube_url,
-      title: song.title || 'Unknown Title',
-      artist: song.artist || 'Unknown Artist',
-      duration: song.duration || '0:00',
-      thumbnail_url: song.thumbnail_url || '',
-      view_count: song.view_count || 0,
-      upload_date: song.upload_date || new Date().toISOString(),
-      channel_name: song.channel_name || 'Unknown Channel',
-      group_type: 'library',
-      status: 'saved',
-      added_at: new Date().toISOString()
-    }));
-
-    // Insert new songs
-    const { data: insertedSongs, error: insertError } = await supabaseAdmin
-      .from('user_songs')
-      .insert(songsToInsert)
-      .select('youtube_id');
-
-    if (insertError) {
-      console.error('Error inserting songs:', insertError);
-      return NextResponse.json(
-        { success: false, message: 'Failed to add songs to library', added_count: 0, duplicate_count: duplicateCount, failed_count: newSongs.length },
-        { status: 500 }
-      );
-    }
-
-    const addedCount = insertedSongs?.length || 0;
-    const failedCount = newSongs.length - addedCount;
-
-    console.log(`Successfully added ${addedCount} songs to library`);
+    console.log(`Successfully processed all songs: ${addedCount} added, ${duplicateCount} duplicates, ${failedCount} failed`);
 
     return NextResponse.json({
       success: true,
-      message: `Added ${addedCount} song${addedCount === 1 ? '' : 's'} to your library${duplicateCount > 0 ? `, ${duplicateCount} already existed` : ''}`,
+      message: `Added ${addedCount} song${addedCount === 1 ? '' : 's'} to your library${duplicateCount > 0 ? `, ${duplicateCount} already existed` : ''}${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
       added_count: addedCount,
       duplicate_count: duplicateCount,
       failed_count: failedCount
@@ -141,22 +149,37 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const search = searchParams.get('search');
     const offset = (page - 1) * limit;
 
-    // Build query
+    // Build query with JOIN to get song details
     let query = supabaseAdmin
       .from('user_songs')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId)
-      .eq('group_type', 'library')
-      .eq('status', 'saved');
+      .select(`
+        id,
+        user_id,
+        song_id,
+        added_at,
+        songs!inner (
+          id,
+          youtube_id,
+          youtube_url,
+          title,
+          artist,
+          duration,
+          thumbnail_url,
+          view_count,
+          upload_date,
+          channel_name
+        )
+      `, { count: 'exact' })
+      .eq('user_id', userId);
 
     // Add search filter if provided
     if (search && search.trim()) {
       const searchTerm = search.trim();
-      query = query.or(`title.ilike.%${searchTerm}%,artist.ilike.%${searchTerm}%,channel_name.ilike.%${searchTerm}%`);
+      query = query.or(`songs.title.ilike.%${searchTerm}%,songs.artist.ilike.%${searchTerm}%,songs.channel_name.ilike.%${searchTerm}%`);
     }
 
     // Execute query with pagination
-    const { data: songs, error: fetchError, count } = await query
+    const { data: userSongs, error: fetchError, count } = await query
       .order('added_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -167,6 +190,24 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { status: 500 }
       );
     }
+
+    // Flatten the data structure for the frontend
+    const songs = userSongs?.map(userSong => ({
+      id: userSong.id,
+      user_id: userSong.user_id,
+      song_id: userSong.song_id,
+      added_at: userSong.added_at,
+      // Flatten song details
+      youtube_id: userSong.songs.youtube_id,
+      youtube_url: userSong.songs.youtube_url,
+      title: userSong.songs.title,
+      artist: userSong.songs.artist,
+      duration: userSong.songs.duration,
+      thumbnail_url: userSong.songs.thumbnail_url,
+      view_count: userSong.songs.view_count,
+      upload_date: userSong.songs.upload_date,
+      channel_name: userSong.songs.channel_name
+    })) || [];
 
     return NextResponse.json({
       songs: songs || [],
