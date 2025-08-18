@@ -340,13 +340,14 @@ export default function LibraryPage() {
     setIsDownloading(prev => new Set(prev).add(songId));
     
     try {
-      const response = await fetch('/api/library/download', {
+      // First, generate the MP3 file
+      const response = await fetch('/api/download-mp3', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          songIds: [songId],
+          songId: songId,
           userId: user.id
         }),
       });
@@ -354,18 +355,26 @@ export default function LibraryPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to download song');
+        throw new Error(data.message || 'Failed to generate MP3');
       }
 
-      console.log('Song downloaded:', data.message);
-      
-      // TODO: Show toast notification
-      // toast.success(data.message);
+      console.log('MP3 generated:', data.message);
+
+      // If successful, trigger the download
+      if (data.download_url && data.file_name) {
+        // Create a temporary link to trigger download
+        const link = document.createElement('a');
+        link.href = data.download_url;
+        link.download = data.file_name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('File download triggered:', data.file_name);
+      }
       
     } catch (error) {
       console.error('Error downloading song:', error);
-      // TODO: Show error toast
-      // toast.error(error.message || 'Failed to download song');
     } finally {
       setIsDownloading(prev => {
         const newSet = new Set(prev);
@@ -381,37 +390,16 @@ export default function LibraryPage() {
 
     const songIdsToDownload = Array.from(selectedSongs);
     
-    try {
-      const response = await fetch('/api/library/download', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          songIds: songIdsToDownload,
-          userId: user.id
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to download songs');
-      }
-
-      console.log('Bulk download completed:', data.message);
-      
-      // Clear selection
-      setSelectedSongs(new Set());
-      
-      // TODO: Show toast notification
-      // toast.success(data.message);
-      
-    } catch (error) {
-      console.error('Error bulk downloading songs:', error);
-      // TODO: Show error toast
-      // toast.error(error.message || 'Failed to download songs');
+    // Download each song individually
+    for (const songId of songIdsToDownload) {
+      await handleDownloadSong(songId);
+      // Add a small delay between downloads to prevent overwhelming the server
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
+    
+    // Clear selection after all downloads
+    setSelectedSongs(new Set());
+    console.log(`Bulk download initiated for ${songIdsToDownload.length} songs`);
   };
 
   // Redirect to login if not authenticated
