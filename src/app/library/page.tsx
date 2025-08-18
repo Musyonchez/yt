@@ -40,10 +40,12 @@ export default function LibraryPage() {
   const [totalSongs, setTotalSongs] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSongs, setSelectedSongs] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState<Set<string>>(new Set());
+  const [isDeletingLibrary, setIsDeletingLibrary] = useState<Set<string>>(new Set());
+  const [isDeletingDownloads, setIsDeletingDownloads] = useState<Set<string>>(new Set());
+  const [isDeletingCompletely, setIsDeletingCompletely] = useState<Set<string>>(new Set());
   const [isDownloading, setIsDownloading] = useState<Set<string>>(new Set());
 
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   // Fetch library data
   const fetchLibrary = async (page: number = 1, search: string = '') => {
@@ -120,11 +122,11 @@ export default function LibraryPage() {
     }
   };
 
-  // Handle delete song
-  const handleDeleteSong = async (songId: string) => {
+  // Handle remove from library only
+  const handleRemoveFromLibrary = async (songId: string) => {
     if (!user) return;
 
-    setIsDeleting(prev => new Set(prev).add(songId));
+    setIsDeletingLibrary(prev => new Set(prev).add(songId));
     
     try {
       const response = await fetch('/api/library/delete', {
@@ -141,23 +143,16 @@ export default function LibraryPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete song');
+        throw new Error(data.message || 'Failed to remove from library');
       }
 
-      console.log('Song deleted:', data.message);
-      
-      // Refresh library to show updated list
+      console.log('Song removed from library:', data.message);
       await fetchLibrary(currentPage, searchQuery);
       
-      // TODO: Show toast notification
-      // toast.success(data.message);
-      
     } catch (error) {
-      console.error('Error deleting song:', error);
-      // TODO: Show error toast
-      // toast.error(error.message || 'Failed to delete song');
+      console.error('Error removing from library:', error);
     } finally {
-      setIsDeleting(prev => {
+      setIsDeletingLibrary(prev => {
         const newSet = new Set(prev);
         newSet.delete(songId);
         return newSet;
@@ -165,8 +160,83 @@ export default function LibraryPage() {
     }
   };
 
-  // Handle bulk delete
-  const handleBulkDelete = async () => {
+  // Handle delete download only
+  const handleDeleteDownload = async (songId: string) => {
+    if (!user) return;
+
+    setIsDeletingDownloads(prev => new Set(prev).add(songId));
+    
+    try {
+      const response = await fetch('/api/downloads/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: [songId],
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete download');
+      }
+
+      console.log('Download deleted:', data.message);
+      
+    } catch (error) {
+      console.error('Error deleting download:', error);
+    } finally {
+      setIsDeletingDownloads(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(songId);
+        return newSet;
+      });
+    }
+  };
+
+  // Handle complete deletion (from both library and downloads)
+  const handleDeleteCompletely = async (songId: string) => {
+    if (!user) return;
+
+    setIsDeletingCompletely(prev => new Set(prev).add(songId));
+    
+    try {
+      const response = await fetch('/api/user/delete-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: [songId],
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete song completely');
+      }
+
+      console.log('Song deleted completely:', data.message);
+      await fetchLibrary(currentPage, searchQuery);
+      
+    } catch (error) {
+      console.error('Error deleting song completely:', error);
+    } finally {
+      setIsDeletingCompletely(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(songId);
+        return newSet;
+      });
+    }
+  };
+
+  // Handle bulk remove from library
+  const handleBulkRemoveFromLibrary = async () => {
     if (!user || selectedSongs.size === 0) return;
 
     const songIdsToDelete = Array.from(selectedSongs);
@@ -186,24 +256,80 @@ export default function LibraryPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to delete songs');
+        throw new Error(data.message || 'Failed to remove songs from library');
       }
 
-      console.log('Bulk delete completed:', data.message);
-      
-      // Clear selection
+      console.log('Bulk library removal completed:', data.message);
       setSelectedSongs(new Set());
-      
-      // Refresh library to show updated list
       await fetchLibrary(currentPage, searchQuery);
       
-      // TODO: Show toast notification
-      // toast.success(data.message);
+    } catch (error) {
+      console.error('Error bulk removing from library:', error);
+    }
+  };
+
+  // Handle bulk delete downloads
+  const handleBulkDeleteDownloads = async () => {
+    if (!user || selectedSongs.size === 0) return;
+
+    const songIdsToDelete = Array.from(selectedSongs);
+    
+    try {
+      const response = await fetch('/api/downloads/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: songIdsToDelete,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete downloads');
+      }
+
+      console.log('Bulk downloads deletion completed:', data.message);
+      setSelectedSongs(new Set());
       
     } catch (error) {
-      console.error('Error bulk deleting songs:', error);
-      // TODO: Show error toast
-      // toast.error(error.message || 'Failed to delete songs');
+      console.error('Error bulk deleting downloads:', error);
+    }
+  };
+
+  // Handle bulk complete deletion
+  const handleBulkDeleteCompletely = async () => {
+    if (!user || selectedSongs.size === 0) return;
+
+    const songIdsToDelete = Array.from(selectedSongs);
+    
+    try {
+      const response = await fetch('/api/user/delete-song', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          songIds: songIdsToDelete,
+          userId: user.id
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to delete songs completely');
+      }
+
+      console.log('Bulk complete deletion completed:', data.message);
+      setSelectedSongs(new Set());
+      await fetchLibrary(currentPage, searchQuery);
+      
+    } catch (error) {
+      console.error('Error bulk deleting songs completely:', error);
     }
   };
 
@@ -324,66 +450,31 @@ export default function LibraryPage() {
           </p>
         </div>
 
-        {/* Search and Actions Bar */}
+        {/* Search Bar */}
         <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex-1 max-w-lg">
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search your library..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  🔍 Search
-                </button>
-              </div>
-            </form>
-
-            {/* Actions */}
-            {songs.length > 0 && (
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSelectAll}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  {selectedSongs.size === songs.length ? 'Deselect All' : 'Select All'}
-                </button>
-                
-                {selectedSongs.size > 0 && (
-                  <>
-                    <button
-                      onClick={handleBulkDownload}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      ⬇️ Download {selectedSongs.size}
-                    </button>
-                    <button
-                      onClick={handleBulkDelete}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      🗑️ Delete {selectedSongs.size}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Stats */}
-          {totalSongs > 0 && (
+          <form onSubmit={handleSearch} className="flex gap-3">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search your library..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-transparent"
+              />
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              🔍 Search
+            </button>
+          </form>
+          
+          {/* Search Info */}
+          {searchQuery && (
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
-                {totalSongs} song{totalSongs === 1 ? '' : 's'} in your library
-                {searchQuery && ` • Searching for "${searchQuery}"`}
+                Searching for &quot;{searchQuery}&quot;
               </p>
             </div>
           )}
@@ -429,8 +520,68 @@ export default function LibraryPage() {
             )}
           </div>
         ) : (
-          // Songs List
-          <div className="space-y-4">
+          <>
+            {/* Results Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900">
+                My Library ({totalSongs} songs)
+              </h2>
+              
+              {songs.length > 1 && (
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSelectAll}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    {selectedSongs.size === songs.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                  
+                  {selectedSongs.size > 0 && (
+                    <>
+                      <button
+                        onClick={handleBulkDownload}
+                        className="px-3 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm"
+                      >
+                        ⬇️ Download {selectedSongs.size}
+                      </button>
+                      <button
+                        onClick={handleBulkRemoveFromLibrary}
+                        className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                      >
+                        📚 Remove from Library ({selectedSongs.size})
+                      </button>
+                      <button
+                        onClick={handleBulkDeleteDownloads}
+                        className="px-3 py-2 border border-orange-300 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors text-sm"
+                      >
+                        🗂️ Delete Downloads ({selectedSongs.size})
+                      </button>
+                      <button
+                        onClick={handleBulkDeleteCompletely}
+                        className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                      >
+                        🗑️ Remove Completely ({selectedSongs.size})
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Pagination Info */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center text-sm text-gray-600 mb-6">
+                <span>
+                  Showing {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalSongs)} of {totalSongs} songs
+                </span>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+              </div>
+            )}
+
+            {/* Songs List */}
+            <div className="space-y-4">
             {songs.map((song) => (
               <div
                 key={song.id}
@@ -453,13 +604,17 @@ export default function LibraryPage() {
 
                   {/* Thumbnail */}
                   <div className="flex-shrink-0">
-                    <div className="relative w-24 h-18 bg-gray-100 rounded overflow-hidden">
+                    <div className="relative w-32 h-24 bg-gray-100 rounded overflow-hidden">
                       {song.thumbnail_url ? (
                         <Image
                           src={song.thumbnail_url}
                           alt={song.title}
                           fill
                           className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder-thumbnail.jpg';
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -492,6 +647,9 @@ export default function LibraryPage() {
                       {song.view_count && (
                         <span>{song.view_count.toLocaleString()} views</span>
                       )}
+                      {song.upload_date && (
+                        <span>{new Date(song.upload_date).toLocaleDateString()}</span>
+                      )}
                       {song.channel_name && (
                         <span>{song.channel_name}</span>
                       )}
@@ -514,11 +672,11 @@ export default function LibraryPage() {
                       <button
                         onClick={() => handleDownloadSong(song.id)}
                         disabled={isDownloading.has(song.id)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isDownloading.has(song.id) ? (
                           <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                             <span>Downloading...</span>
                           </div>
                         ) : (
@@ -526,20 +684,39 @@ export default function LibraryPage() {
                         )}
                       </button>
 
-                      {/* Delete Button */}
+                      {/* Remove from Library Button */}
                       <button
-                        onClick={() => handleDeleteSong(song.id)}
-                        disabled={isDeleting.has(song.id)}
-                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        onClick={() => handleRemoveFromLibrary(song.id)}
+                        disabled={isDeletingLibrary.has(song.id)}
+                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                       >
-                        {isDeleting.has(song.id) ? 'Deleting...' : '🗑️ Remove'}
+                        {isDeletingLibrary.has(song.id) ? 'Removing...' : '📚 Remove from Library'}
+                      </button>
+
+                      {/* Delete Download Button */}
+                      <button
+                        onClick={() => handleDeleteDownload(song.id)}
+                        disabled={isDeletingDownloads.has(song.id)}
+                        className="px-4 py-2 border border-orange-300 text-orange-600 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
+                      >
+                        {isDeletingDownloads.has(song.id) ? 'Deleting...' : '🗂️ Delete Download'}
+                      </button>
+
+                      {/* Remove Completely Button */}
+                      <button
+                        onClick={() => handleDeleteCompletely(song.id)}
+                        disabled={isDeletingCompletely.has(song.id)}
+                        className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                      >
+                        {isDeletingCompletely.has(song.id) ? 'Removing...' : '🗑️ Remove Completely'}
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </>
         )}
 
         {/* Pagination */}
