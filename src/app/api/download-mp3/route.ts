@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-
-const execAsync = promisify(exec);
 
 interface DownloadMP3Request {
   songId: string;
@@ -97,22 +94,49 @@ export async function POST(request: NextRequest): Promise<NextResponse<DownloadM
 
     // Use yt-dlp to download and convert to MP3
     const ytdlpPath = path.join(process.cwd(), 'ytdlp_env', 'bin', 'yt-dlp');
-    const command = [
-      ytdlpPath,
+    const outputTemplate = outputPath.replace('.mp3', '.%(ext)s');
+    
+    // Build command arguments array to avoid shell escaping issues
+    const args = [
       '--extract-audio',
       '--audio-format', 'mp3',
       '--audio-quality', '192K',
-      '--output', outputPath.replace('.mp3', '.%(ext)s'),
+      '--output', outputTemplate,
       '--no-playlist',
       '--embed-metadata',
-      `"${youtubeUrl}"`
-    ].join(' ');
+      youtubeUrl
+    ];
 
-    console.log('Executing yt-dlp command:', command);
+    console.log('Executing yt-dlp with args:', [ytdlpPath, ...args]);
 
-    // Execute yt-dlp command
-    const { stdout, stderr } = await execAsync(command, {
-      timeout: 300000 // 5 minutes timeout
+    // Execute yt-dlp command using spawn to avoid shell escaping issues
+    const { stdout, stderr } = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+      const process = spawn(ytdlpPath, args, {
+        timeout: 300000 // 5 minutes timeout
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      process.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      process.stderr.on('data', (data) => {
+        stderr += data.toString();
+      });
+
+      process.on('close', (code) => {
+        if (code === 0) {
+          resolve({ stdout, stderr });
+        } else {
+          reject(new Error(`yt-dlp exited with code ${code}. stderr: ${stderr}`));
+        }
+      });
+
+      process.on('error', (error) => {
+        reject(error);
+      });
     });
 
     console.log('yt-dlp stdout:', stdout);
