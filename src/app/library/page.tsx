@@ -84,7 +84,7 @@ export default function LibraryPage() {
     if (user) {
       fetchLibrary(1, searchQuery);
     }
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle search
   const handleSearch = (e: React.FormEvent) => {

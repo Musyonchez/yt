@@ -192,7 +192,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Flatten the data structure for the frontend
-    const songs = userSongs?.map(userSong => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const songs = userSongs?.map((userSong: any) => ({
       id: userSong.id,
       user_id: userSong.user_id,
       song_id: userSong.song_id,

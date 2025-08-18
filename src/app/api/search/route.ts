@@ -32,7 +32,8 @@ async function getUserLibraryVideoIds(userId: string): Promise<string[]> {
       return [];
     }
 
-    return userSongs?.map(userSong => userSong.songs.youtube_id) || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return userSongs?.map((userSong: any) => userSong.songs.youtube_id) || [];
   } catch (error) {
     console.error('Error in getUserLibraryVideoIds:', error);
     return [];
