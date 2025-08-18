@@ -5,7 +5,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Client-side supabase instance (uses anon key)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  }
+});
 
 // Server-side supabase instance (uses service role key to bypass RLS)
 // Only available server-side
@@ -67,22 +74,41 @@ export interface UserDownload {
 
 // User management functions for hybrid auth approach
 export const createOrUpdateUser = async (authUser: AuthUser) => {
-  // Use the safe upsert function to avoid RLS issues
-  const { data, error } = await supabase
-    .rpc('safe_upsert_user', {
-      user_id: authUser.id,
-      user_email: authUser.email,
-      user_google_id: authUser.user_metadata?.sub,
-      user_display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
-      user_avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture,
-    });
+  try {
+    // Use the safe upsert function to avoid RLS issues
+    const { data, error } = await supabase
+      .rpc('safe_upsert_user', {
+        user_id: authUser.id,
+        user_email: authUser.email,
+        user_google_id: authUser.user_metadata?.sub,
+        user_display_name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
+        user_avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture,
+      });
 
-  if (error) {
-    console.error('Error creating/updating user:', error);
-    return { error };
+    if (error) {
+      console.error('Error creating/updating user:', error);
+      
+      // Fallback: try to get existing user profile
+      const { data: existingUser, error: fetchError } = await getUserProfile(authUser.id);
+      if (!fetchError && existingUser) {
+        return { data: existingUser };
+      }
+      
+      return { error };
+    }
+
+    return { data };
+  } catch (networkError) {
+    console.error('Network error in createOrUpdateUser:', networkError);
+    
+    // Try to get cached user data
+    const { data: existingUser } = await getUserProfile(authUser.id);
+    if (existingUser) {
+      return { data: existingUser };
+    }
+    
+    return { error: networkError };
   }
-
-  return { data };
 };
 
 export const getUserProfile = async (userId: string) => {
