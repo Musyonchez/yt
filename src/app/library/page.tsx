@@ -362,7 +362,7 @@ export default function LibraryPage() {
                   <>
                     <button
                       onClick={handleBulkDownload}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       ⬇️ Download {selectedSongs.size}
                     </button>
@@ -514,11 +514,11 @@ export default function LibraryPage() {
                       <button
                         onClick={() => handleDownloadSong(song.id)}
                         disabled={isDownloading.has(song.id)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isDownloading.has(song.id) ? (
                           <div className="flex items-center space-x-2">
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
                             <span>Downloading...</span>
                           </div>
                         ) : (
@@ -530,7 +530,7 @@ export default function LibraryPage() {
                       <button
                         onClick={() => handleDeleteSong(song.id)}
                         disabled={isDeleting.has(song.id)}
-                        className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
                       >
                         {isDeleting.has(song.id) ? 'Deleting...' : '🗑️ Remove'}
                       </button>
