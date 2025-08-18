@@ -38,7 +38,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<DeleteFro
       .from('user_songs')
       .delete()
       .eq('user_id', userId)
-      .eq('group_type', 'library')
       .in('id', songIds)
       .select('id');
 
