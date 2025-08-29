@@ -240,21 +240,21 @@ export default function SearchNamePage() {
                 {/* Content */}
                 <div className="p-4 flex-1 flex flex-col">
                   <h3 
-                    className="font-semibold mb-2 line-clamp-2 text-sm leading-tight"
+                    className="font-semibold mb-2 line-clamp-2 text-sm leading-tight flex-1"
                     style={{ color: 'var(--foreground)' }}
                   >
                     {result.title}
                   </h3>
                   
                   <div 
-                    className="text-xs mb-3 flex-1 flex justify-between items-center"
+                    className="text-xs mb-3 flex justify-between items-center"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     <p className="truncate pr-2">{result.uploader}</p>
                     <p className="whitespace-nowrap">{formatViews(result.view_count)}</p>
                   </div>
 
-                  <div className="mt-auto">
+                  <div>
                     <a
                       href={result.webpage_url}
                       target="_blank"
