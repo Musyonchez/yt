@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { isLocalhost } from '@/utils/localhost';
+import HostingInfoModal from '@/components/HostingInfoModal';
 
 interface VideoResult {
   id: string;
@@ -22,6 +24,7 @@ export default function SearchVideoPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showHostingModal, setShowHostingModal] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +38,12 @@ export default function SearchVideoPage() {
     const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     if (!youtubeRegex.test(videoUrl.trim())) {
       setError('Please enter a valid YouTube video URL');
+      return;
+    }
+
+    // Check if running on localhost
+    if (!isLocalhost()) {
+      setShowHostingModal(true);
       return;
     }
 
@@ -319,6 +328,12 @@ export default function SearchVideoPage() {
           </p>
         </div>
       )}
+
+      {/* Hosting Info Modal */}
+      <HostingInfoModal 
+        isOpen={showHostingModal} 
+        onClose={() => setShowHostingModal(false)} 
+      />
     </div>
   );
 }
