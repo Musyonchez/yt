@@ -32,6 +32,7 @@ export default function Navbar() {
                 height={45}
                 priority
                 className="transition-all duration-300 group-hover:scale-105"
+                style={{ height: 'auto' }}
               />
             </div>
           </Link>

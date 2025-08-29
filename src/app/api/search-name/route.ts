@@ -106,7 +106,11 @@ async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
 
     ytdlpProcess.on('error', (error) => {
       console.error('yt-dlp spawn error:', error);
-      reject(new Error(`Failed to start yt-dlp: ${error.message}`));
+      if (error.message.includes('ENOENT') || error.message.includes('spawn yt-dlp')) {
+        reject(new Error('yt-dlp is not installed or not available in PATH. Please install yt-dlp: pip install yt-dlp'));
+      } else {
+        reject(new Error(`Failed to start yt-dlp: ${error.message}`));
+      }
     });
 
     // Set timeout for the process (30 seconds)

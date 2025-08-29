@@ -27,6 +27,7 @@ export default function Footer() {
                 width={140}
                 height={45}
                 className="transition-opacity duration-200 hover:opacity-80"
+                style={{ height: 'auto' }}
               />
             </Link>
             <p 
