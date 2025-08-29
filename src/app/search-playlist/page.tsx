@@ -16,8 +16,8 @@ interface SearchResult {
   description: string;
 }
 
-export default function SearchNamePage() {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function SearchPlaylistPage() {
+  const [playlistUrl, setPlaylistUrl] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,8 +33,15 @@ export default function SearchNamePage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!searchTerm.trim()) {
-      setError('Please enter a search term');
+    if (!playlistUrl.trim()) {
+      setError('Please enter a playlist URL');
+      return;
+    }
+
+    // Basic YouTube playlist URL validation
+    const playlistRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(playlist\?list=|watch\?.*&list=)|youtu\.be\/.*\?list=)([a-zA-Z0-9_-]+)/;
+    if (!playlistRegex.test(playlistUrl.trim())) {
+      setError('Please enter a valid YouTube playlist URL');
       return;
     }
 
@@ -45,41 +52,32 @@ export default function SearchNamePage() {
     setHasSearched(true);
 
     try {
-      const response = await fetch('/api/search-name', {
+      const response = await fetch('/api/search-playlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searchTerm: searchTerm.trim() }),
+        body: JSON.stringify({ playlistUrl: playlistUrl.trim() }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Search failed');
+        throw new Error(data.error || 'Playlist processing failed');
       }
 
       setResults(data.results || []);
       
       if (data.results.length === 0) {
-        setError('No videos found. Try different search terms.');
+        setError('No videos found in playlist. Please check the URL and try again.');
       }
 
     } catch (err) {
       console.error('Search error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while searching');
+      setError(err instanceof Error ? err.message : 'An error occurred while processing the playlist');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatViews = (views: number): string => {
-    if (views >= 1000000) {
-      return `${(views / 1000000).toFixed(1)}M views`;
-    } else if (views >= 1000) {
-      return `${(views / 1000).toFixed(1)}K views`;
-    }
-    return `${views} views`;
   };
 
 
@@ -97,13 +95,13 @@ export default function SearchNamePage() {
           className="text-4xl font-bold mb-4"
           style={{ color: 'var(--primary)' }}
         >
-          Search Videos by Name
+          Search by Playlist URL
         </h1>
         <p 
           className="text-lg"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Enter keywords or video titles to find YouTube content
+          Enter a YouTube playlist URL to extract all videos
         </p>
       </div>
 
@@ -113,9 +111,9 @@ export default function SearchNamePage() {
           <div className="flex-1">
             <input
               type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Enter video title or keywords..."
+              value={playlistUrl}
+              onChange={(e) => setPlaylistUrl(e.target.value)}
+              placeholder="https://www.youtube.com/playlist?list=..."
               className="w-full px-4 py-3 rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2"
               style={{
                 backgroundColor: 'var(--card)',
@@ -127,7 +125,7 @@ export default function SearchNamePage() {
           </div>
           <button
             type="submit"
-            disabled={isLoading || !searchTerm.trim()}
+            disabled={isLoading || !playlistUrl.trim()}
             className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
             style={{
               backgroundColor: 'var(--primary)',
@@ -137,10 +135,10 @@ export default function SearchNamePage() {
             {isLoading ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Searching...</span>
+                <span>Processing...</span>
               </div>
             ) : (
-              'Search'
+              'Process Playlist'
             )}
           </button>
         </div>
@@ -172,7 +170,7 @@ export default function SearchNamePage() {
               className="text-lg"
               style={{ color: 'var(--muted-foreground)' }}
             >
-              Searching YouTube...
+              Processing playlist...
             </span>
           </div>
         </div>
@@ -184,7 +182,7 @@ export default function SearchNamePage() {
           {/* Results Header */}
           <div className="flex justify-between items-center mb-6">
             <p style={{ color: 'var(--muted-foreground)' }}>
-              Found {results.length} results • Page {currentPage} of {totalPages}
+              Found {results.length} videos • Page {currentPage} of {totalPages}
             </p>
           </div>
 
@@ -235,11 +233,10 @@ export default function SearchNamePage() {
                   </h3>
                   
                   <div 
-                    className="text-xs mb-3 flex justify-between items-center"
+                    className="text-xs mb-3"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
-                    <p className="truncate pr-2">{result.uploader}</p>
-                    <p className="whitespace-nowrap">{formatViews(result.view_count)}</p>
+                    <p className="truncate">{result.uploader}</p>
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -349,7 +346,7 @@ export default function SearchNamePage() {
             className="text-lg mb-4"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            No results found. Try different search terms.
+            No videos found in playlist. Please check the URL and try again.
           </p>
         </div>
       )}
