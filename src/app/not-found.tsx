@@ -1,49 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { useTheme } from '@/hooks/useTheme';
 
 export default function NotFound() {
-  const { theme } = useTheme();
-
   return (
     <div 
-      className="min-h-screen flex items-center justify-center px-6"
+      className="min-h-screen flex items-center justify-center px-6 py-8"
       style={{ 
         backgroundColor: 'var(--background)', 
         color: 'var(--foreground)' 
       }}
     >
-      <div className="max-w-md mx-auto text-center">
-        {/* Logo */}
-        <div className="mb-8">
-          <Image
-            src={theme === 'light' ? '/logo-black.png' : '/logo-white.png'}
-            alt="MP3Ninja Logo"
-            width={140}
-            height={45}
-            className="mx-auto opacity-50"
-            style={{ height: 'auto' }}
-          />
-        </div>
-
+      <div className="max-w-md mx-auto text-center space-y-6">
         {/* 404 Number */}
-        <div className="mb-6">
+        <div>
           <h1 
-            className="text-8xl font-bold mb-4"
+            className="text-6xl md:text-8xl font-bold mb-2"
             style={{ color: 'var(--primary)' }}
           >
             404
           </h1>
           <h2 
-            className="text-2xl font-semibold mb-4"
+            className="text-xl md:text-2xl font-semibold mb-3"
             style={{ color: 'var(--foreground)' }}
           >
             Page Not Found
           </h2>
           <p 
-            className="text-lg mb-8"
+            className="text-base md:text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
             The page you're looking for doesn't exist or has been moved.
@@ -66,7 +50,7 @@ export default function NotFound() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Link
               href="/search-name"
-              className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center"
+              className="px-3 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center text-sm"
               style={{
                 color: 'var(--muted-foreground)',
                 border: '1px solid var(--border)',
@@ -78,7 +62,7 @@ export default function NotFound() {
             
             <Link
               href="/search-video"
-              className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center"
+              className="px-3 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center text-sm"
               style={{
                 color: 'var(--muted-foreground)',
                 border: '1px solid var(--border)',
@@ -90,7 +74,7 @@ export default function NotFound() {
             
             <Link
               href="/search-playlist"
-              className="px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center"
+              className="px-3 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105 text-center text-sm"
               style={{
                 color: 'var(--muted-foreground)',
                 border: '1px solid var(--border)',
@@ -103,7 +87,7 @@ export default function NotFound() {
         </div>
 
         {/* Fun Message */}
-        <div className="mt-8 pt-6 border-t" style={{ borderTopColor: 'var(--border)' }}>
+        <div className="pt-4 border-t" style={{ borderTopColor: 'var(--border)' }}>
           <p 
             className="text-sm"
             style={{ color: 'var(--muted-foreground)' }}
