@@ -201,71 +201,70 @@ export default function SearchNamePage() {
           </div>
 
           {/* Results Grid */}
-          <div className="grid gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
             {currentResults.map((result) => (
               <div
                 key={result.id}
-                className="flex gap-4 p-4 rounded-lg border transition-all duration-200 hover:shadow-lg"
+                className="flex flex-col rounded-lg border transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden group"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)'
                 }}
               >
                 {/* Thumbnail */}
-                <div className="flex-shrink-0">
-                  <div className="w-40 h-24 relative rounded-lg overflow-hidden">
-                    {result.thumbnail ? (
-                      <Image
-                        src={result.thumbnail}
-                        alt={result.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div 
-                        className="w-full h-full flex items-center justify-center"
-                        style={{ backgroundColor: 'var(--muted)' }}
-                      >
-                        <span style={{ color: 'var(--muted-foreground)' }}>
-                          No thumbnail
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute bottom-1 right-1 px-1 py-0.5 rounded text-xs font-semibold bg-black bg-opacity-80 text-white">
-                      {result.duration_string}
+                <div className="relative aspect-video w-full overflow-hidden">
+                  {result.thumbnail ? (
+                    <Image
+                      src={result.thumbnail}
+                      alt={result.title}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div 
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--muted)' }}
+                    >
+                      <span style={{ color: 'var(--muted-foreground)' }}>
+                        No thumbnail
+                      </span>
                     </div>
+                  )}
+                  <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-semibold bg-black bg-opacity-80 text-white">
+                    {result.duration_string}
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="p-4 flex-1 flex flex-col">
                   <h3 
-                    className="text-lg font-semibold mb-2 line-clamp-2"
+                    className="font-semibold mb-2 line-clamp-2 text-sm leading-tight"
                     style={{ color: 'var(--foreground)' }}
                   >
                     {result.title}
                   </h3>
                   
                   <p 
-                    className="text-sm mb-2"
+                    className="text-xs mb-2 truncate"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     {result.uploader}
                   </p>
 
                   <div 
-                    className="text-sm space-y-1"
+                    className="text-xs mb-3 flex-1"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
-                    <p>{formatViews(result.view_count)} • {formatDate(result.upload_date)}</p>
+                    <p>{formatViews(result.view_count)}</p>
+                    <p>{formatDate(result.upload_date)}</p>
                   </div>
 
-                  <div className="mt-3">
+                  <div className="mt-auto">
                     <a
                       href={result.webpage_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-sm font-medium transition-colors duration-200 hover:underline"
+                      className="inline-flex items-center text-xs font-medium transition-colors duration-200 hover:underline"
                       style={{ color: 'var(--primary)' }}
                     >
                       Watch on YouTube
