@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { isLocalhost } from '@/utils/localhost';
+import HostingInfoModal from '@/components/HostingInfoModal';
 
 interface SearchResult {
   id: string;
@@ -23,6 +25,7 @@ export default function SearchPlaylistPage() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showHostingModal, setShowHostingModal] = useState(false);
 
   const resultsPerPage = 10;
   const totalPages = Math.ceil(results.length / resultsPerPage);
@@ -42,6 +45,12 @@ export default function SearchPlaylistPage() {
     const playlistRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(playlist\?list=|watch\?.*&list=)|youtu\.be\/.*\?list=)([a-zA-Z0-9_-]+)/;
     if (!playlistRegex.test(playlistUrl.trim())) {
       setError('Please enter a valid YouTube playlist URL');
+      return;
+    }
+
+    // Check if running on localhost
+    if (!isLocalhost()) {
+      setShowHostingModal(true);
       return;
     }
 
@@ -350,6 +359,12 @@ export default function SearchPlaylistPage() {
           </p>
         </div>
       )}
+
+      {/* Hosting Info Modal */}
+      <HostingInfoModal 
+        isOpen={showHostingModal} 
+        onClose={() => setShowHostingModal(false)} 
+      />
     </div>
   );
 }
