@@ -256,7 +256,6 @@ export default function SearchNamePage() {
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     <p>{formatViews(result.view_count)}</p>
-                    <p>{formatDate(result.upload_date)}</p>
                   </div>
 
                   <div className="mt-auto">
