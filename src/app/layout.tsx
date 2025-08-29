@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YouTube Search App",
-  description: "Search YouTube videos by name, video URL, or playlist URL",
+  title: "MP3Ninja - YouTube Video Search & Download",
+  description: "Search and download YouTube videos by name, video URL, or playlist URL",
 };
 
 export default function RootLayout({

@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Architecture
 
-This is a Next.js 15 project with App Router using TypeScript and Tailwind CSS v4.
+This is MP3Ninja, a Next.js 15 project with App Router using TypeScript and Tailwind CSS v4. MP3Ninja allows users to search and download YouTube videos by name, video URL, or playlist URL.
 
 ### Key Technologies
 
@@ -28,7 +28,15 @@ src/
 │   ├── layout.tsx       # Root layout with font configuration
 │   ├── page.tsx         # Home page
 │   └── globals.css      # Global styles and Tailwind imports
-docs/                    # Project documentation
+├── components/
+│   ├── Navbar.tsx       # Navigation with MP3Ninja logo and theme toggle
+│   └── Footer.tsx       # Footer component
+├── hooks/
+│   └── useTheme.ts      # Theme management hook
+public/
+├── logo-black.png       # MP3Ninja logo for light theme
+└── logo-white.png       # MP3Ninja logo for dark theme
+docs/                    # Project documentation and original logos
 ```
 
 ### Styling System

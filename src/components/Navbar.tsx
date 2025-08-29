@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function Navbar() {
@@ -17,8 +18,15 @@ export default function Navbar() {
       className="p-4 transition-colors duration-200"
     >
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/" style={{ color: 'var(--primary)', fontSize: '1.5rem', fontWeight: 'bold' }}>
-          YouTube Search
+        <Link href="/" className="flex items-center">
+          <Image
+            src={theme === 'light' ? '/logo-black.png' : '/logo-white.png'}
+            alt="MP3Ninja Logo"
+            width={120}
+            height={40}
+            priority
+            className="transition-opacity duration-200"
+          />
         </Link>
         
         <div className="flex items-center space-x-6">

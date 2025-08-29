@@ -13,7 +13,7 @@ export default function Footer() {
     >
       <div className="container mx-auto text-center">
         <p style={{ color: 'var(--muted-foreground)' }}>
-          © 2024 YouTube Search App. Built with Next.js and Tailwind CSS.
+          © 2024 MP3Ninja. Built with Next.js and Tailwind CSS.
         </p>
         <div className="flex justify-center space-x-4 mt-2">
           <a 

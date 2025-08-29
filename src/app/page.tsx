@@ -16,13 +16,13 @@ export default function Home() {
           className="text-4xl font-bold mb-4"
           style={{ color: 'var(--primary)' }}
         >
-          YouTube Search App
+          MP3Ninja
         </h1>
         <p 
           className="text-xl"
           style={{ color: 'var(--muted-foreground)' }}
         >
-          Search YouTube videos by name, video URL, or playlist URL
+          Search and download YouTube videos by name, video URL, or playlist URL
         </p>
       </div>
 
