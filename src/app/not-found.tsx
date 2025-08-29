@@ -30,7 +30,7 @@ export default function NotFound() {
             className="text-base md:text-lg"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            The page you're looking for doesn't exist or has been moved.
+            The page you&apos;re looking for doesn&apos;t exist or has been moved.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ export default function NotFound() {
             className="text-sm"
             style={{ color: 'var(--muted-foreground)' }}
           >
-            🎵 Don't worry, the music never stops! Try one of our search features above.
+            🎵 Don&apos;t worry, the music never stops! Try one of our search features above.
           </p>
         </div>
       </div>

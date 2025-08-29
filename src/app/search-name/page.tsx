@@ -82,18 +82,6 @@ export default function SearchNamePage() {
     return `${views} views`;
   };
 
-  const formatDate = (dateString: string): string => {
-    if (!dateString) return 'Unknown date';
-    try {
-      const year = dateString.slice(0, 4);
-      const month = dateString.slice(4, 6);
-      const day = dateString.slice(6, 8);
-      const date = new Date(`${year}-${month}-${day}`);
-      return date.toLocaleDateString();
-    } catch {
-      return 'Unknown date';
-    }
-  };
 
   return (
     <div 
