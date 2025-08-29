@@ -5,216 +5,369 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div 
-      className="container mx-auto px-4 py-8"
       style={{ 
         backgroundColor: 'var(--background)', 
         color: 'var(--foreground)' 
       }}
     >
-      <div className="text-center mb-12">
-        <h1 
-          className="text-4xl font-bold mb-4"
-          style={{ color: 'var(--primary)' }}
-        >
-          MP3Ninja
-        </h1>
-        <p 
-          className="text-xl"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          Search and download YouTube videos by name, video URL, or playlist URL
-        </p>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-        <div 
-          className="p-6 rounded-lg border transition-colors duration-200"
-          style={{ 
-            backgroundColor: 'var(--card)', 
-            borderColor: 'var(--border)',
-            borderWidth: '1px'
-          }}
-        >
-          <div className="text-center">
-            <div 
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--primary)' }}
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 opacity-50" />
+        
+        <div className="relative container mx-auto px-6 py-20 lg:py-32">
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 
+              className="text-5xl lg:text-7xl font-bold mb-6 leading-tight"
+              style={{ color: 'var(--primary)' }}
             >
-              <svg 
-                className="w-8 h-8" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: 'var(--primary-foreground)' }}
-              >
-                <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-              </svg>
-            </div>
-            <h3 
-              className="text-xl font-semibold mb-2"
-              style={{ color: 'var(--card-foreground)' }}
-            >
-              Search by Name
-            </h3>
+              Download YouTube
+              <span className="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Videos Instantly
+              </span>
+            </h1>
+            
             <p 
-              className="mb-4"
+              className="text-xl lg:text-2xl mb-8 leading-relaxed max-w-2xl mx-auto"
               style={{ color: 'var(--muted-foreground)' }}
             >
-              Find YouTube videos by searching for their titles or keywords
+              MP3Ninja makes it simple to search and download YouTube content. 
+              Find videos by name, URL, or entire playlists with our powerful search engine.
             </p>
-            <Link 
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+              <Link
+                href="/search-name"
+                className="group relative px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
+                style={{ 
+                  backgroundColor: 'var(--primary)', 
+                  color: 'var(--primary-foreground)' 
+                }}
+              >
+                <span className="relative z-10">Start Searching</span>
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </Link>
+              
+              <Link
+                href="/search-video"
+                className="group px-8 py-4 rounded-xl font-semibold text-lg border-2 transition-all duration-300 transform hover:scale-105"
+                style={{ 
+                  borderColor: 'var(--border)', 
+                  color: 'var(--foreground)',
+                  backgroundColor: 'transparent'
+                }}
+              >
+                Try Video Search
+              </Link>
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mt-16">
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: 'var(--primary)' }}>
+                  1M+
+                </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  Videos Downloaded
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: 'var(--primary)' }}>
+                  50K+
+                </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  Happy Users
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: 'var(--primary)' }}>
+                  99.9%
+                </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  Uptime
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold mb-2" style={{ color: 'var(--primary)' }}>
+                  24/7
+                </div>
+                <div className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+                  Support
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 
+              className="text-4xl font-bold mb-4"
+              style={{ color: 'var(--foreground)' }}
+            >
+              Three Ways to Find Your Content
+            </h2>
+            <p 
+              className="text-lg max-w-2xl mx-auto"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              Whether you know the title, have a URL, or want an entire playlist, we&apos;ve got you covered
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Search by Name */}
+            <div 
+              className="group relative p-8 rounded-2xl border transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              style={{ 
+                backgroundColor: 'var(--card)', 
+                borderColor: 'var(--border)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+                  style={{ backgroundColor: 'var(--primary)' }}
+                >
+                  <svg 
+                    className="w-8 h-8" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    style={{ color: 'var(--primary-foreground)' }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                
+                <h3 
+                  className="text-2xl font-semibold mb-4"
+                  style={{ color: 'var(--card-foreground)' }}
+                >
+                  Search by Name
+                </h3>
+                
+                <p 
+                  className="text-base leading-relaxed mb-6"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  Simply type the video title or keywords to find exactly what you&apos;re looking for. 
+                  Our smart search understands context and delivers accurate results.
+                </p>
+                
+                <Link 
+                  href="/search-name"
+                  className="inline-flex items-center font-semibold transition-all duration-200 group-hover:translate-x-1"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Try Name Search
+                  <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+
+            {/* Video URL Search */}
+            <div 
+              className="group relative p-8 rounded-2xl border transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              style={{ 
+                backgroundColor: 'var(--card)', 
+                borderColor: 'var(--border)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+                  style={{ backgroundColor: 'var(--primary)' }}
+                >
+                  <svg 
+                    className="w-8 h-8" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    style={{ color: 'var(--primary-foreground)' }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </div>
+                
+                <h3 
+                  className="text-2xl font-semibold mb-4"
+                  style={{ color: 'var(--card-foreground)' }}
+                >
+                  Video URL Search
+                </h3>
+                
+                <p 
+                  className="text-base leading-relaxed mb-6"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  Got a YouTube video URL? Paste it here to get detailed information and download options. 
+                  Works with any valid YouTube video link.
+                </p>
+                
+                <Link 
+                  href="/search-video"
+                  className="inline-flex items-center font-semibold transition-all duration-200 group-hover:translate-x-1"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Try URL Search
+                  <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+
+            {/* Playlist Search */}
+            <div 
+              className="group relative p-8 rounded-2xl border transition-all duration-300 transform hover:scale-105 hover:shadow-2xl"
+              style={{ 
+                backgroundColor: 'var(--card)', 
+                borderColor: 'var(--border)',
+              }}
+            >
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
+              <div className="relative">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+                  style={{ backgroundColor: 'var(--primary)' }}
+                >
+                  <svg 
+                    className="w-8 h-8" 
+                    fill="none" 
+                    viewBox="0 0 24 24" 
+                    stroke="currentColor"
+                    style={{ color: 'var(--primary-foreground)' }}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                
+                <h3 
+                  className="text-2xl font-semibold mb-4"
+                  style={{ color: 'var(--card-foreground)' }}
+                >
+                  Playlist Search
+                </h3>
+                
+                <p 
+                  className="text-base leading-relaxed mb-6"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  Download entire YouTube playlists at once. Perfect for music albums, 
+                  educational series, or any collection of videos you want to save.
+                </p>
+                
+                <Link 
+                  href="/search-playlist"
+                  className="inline-flex items-center font-semibold transition-all duration-200 group-hover:translate-x-1"
+                  style={{ color: 'var(--primary)' }}
+                >
+                  Try Playlist Search
+                  <svg className="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-20" style={{ backgroundColor: 'var(--muted)' }}>
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 
+              className="text-4xl font-bold mb-4"
+              style={{ color: 'var(--foreground)' }}
+            >
+              Why Choose MP3Ninja?
+            </h2>
+            <p 
+              className="text-lg max-w-2xl mx-auto"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              Built with modern technology and designed for the best user experience
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { icon: "🚀", title: "Lightning Fast", description: "Optimized for speed with instant search results" },
+              { icon: "🌙", title: "Dark Mode", description: "Beautiful light and dark themes that adapt to your preference" },
+              { icon: "📱", title: "Responsive", description: "Works perfectly on desktop, tablet, and mobile devices" },
+              { icon: "🔒", title: "Secure", description: "Your privacy is protected with our secure infrastructure" }
+            ].map((feature, index) => (
+              <div key={index} className="text-center group">
+                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                  {feature.icon}
+                </div>
+                <h3 
+                  className="text-xl font-semibold mb-3"
+                  style={{ color: 'var(--foreground)' }}
+                >
+                  {feature.title}
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ color: 'var(--muted-foreground)' }}
+                >
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-6 text-center">
+          <div className="max-w-3xl mx-auto">
+            <h2 
+              className="text-4xl font-bold mb-6"
+              style={{ color: 'var(--foreground)' }}
+            >
+              Ready to Start Downloading?
+            </h2>
+            <p 
+              className="text-lg mb-8"
+              style={{ color: 'var(--muted-foreground)' }}
+            >
+              Join thousands of users who trust MP3Ninja for their YouTube downloading needs
+            </p>
+            
+            <Link
               href="/search-name"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
+              className="group relative inline-flex items-center px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl"
               style={{ 
                 backgroundColor: 'var(--primary)', 
                 color: 'var(--primary-foreground)' 
               }}
             >
-              Start Searching
-            </Link>
-          </div>
-        </div>
-
-        <div 
-          className="p-6 rounded-lg border transition-colors duration-200"
-          style={{ 
-            backgroundColor: 'var(--card)', 
-            borderColor: 'var(--border)',
-            borderWidth: '1px'
-          }}
-        >
-          <div className="text-center">
-            <div 
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--primary)' }}
-            >
-              <svg 
-                className="w-8 h-8" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: 'var(--primary-foreground)' }}
-              >
-                <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+              <span className="relative z-10">Get Started for Free</span>
+              <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-            </div>
-            <h3 
-              className="text-xl font-semibold mb-2"
-              style={{ color: 'var(--card-foreground)' }}
-            >
-              Video URL Search
-            </h3>
-            <p 
-              className="mb-4"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Get detailed information about a specific YouTube video
-            </p>
-            <Link 
-              href="/search-video"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
-              style={{ 
-                backgroundColor: 'var(--primary)', 
-                color: 'var(--primary-foreground)' 
-              }}
-            >
-              Search Video
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Link>
           </div>
         </div>
-
-        <div 
-          className="p-6 rounded-lg border transition-colors duration-200"
-          style={{ 
-            backgroundColor: 'var(--card)', 
-            borderColor: 'var(--border)',
-            borderWidth: '1px'
-          }}
-        >
-          <div className="text-center">
-            <div 
-              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: 'var(--primary)' }}
-            >
-              <svg 
-                className="w-8 h-8" 
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-                style={{ color: 'var(--primary-foreground)' }}
-              >
-                <path d="M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H8V4H20V16Z"/>
-              </svg>
-            </div>
-            <h3 
-              className="text-xl font-semibold mb-2"
-              style={{ color: 'var(--card-foreground)' }}
-            >
-              Playlist URL Search
-            </h3>
-            <p 
-              className="mb-4"
-              style={{ color: 'var(--muted-foreground)' }}
-            >
-              Explore YouTube playlists and their video contents
-            </p>
-            <Link 
-              href="/search-playlist"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
-              style={{ 
-                backgroundColor: 'var(--primary)', 
-                color: 'var(--primary-foreground)' 
-              }}
-            >
-              Search Playlist
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="text-center mt-12">
-        <h2 
-          className="text-2xl font-semibold mb-4"
-          style={{ color: 'var(--card-foreground)' }}
-        >
-          Features
-        </h2>
-        <div className="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: 'var(--primary)' }}
-            />
-            <span style={{ color: 'var(--muted-foreground)' }}>
-              Theme switching (Light/Dark mode)
-            </span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: 'var(--primary)' }}
-            />
-            <span style={{ color: 'var(--muted-foreground)' }}>
-              Responsive design
-            </span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: 'var(--primary)' }}
-            />
-            <span style={{ color: 'var(--muted-foreground)' }}>
-              Fast search functionality
-            </span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div 
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: 'var(--primary)' }}
-            />
-            <span style={{ color: 'var(--muted-foreground)' }}>
-              Modern UI/UX
-            </span>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
