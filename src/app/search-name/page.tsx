@@ -121,7 +121,7 @@ export default function SearchNamePage() {
 
       {/* Search Form */}
       <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <input
               type="text"
@@ -140,14 +140,14 @@ export default function SearchNamePage() {
           <button
             type="submit"
             disabled={isLoading || !searchTerm.trim()}
-            className="px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+            className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
             style={{
               backgroundColor: 'var(--primary)',
               color: 'var(--primary-foreground)'
             }}
           >
             {isLoading ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-center space-x-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Searching...</span>
               </div>
