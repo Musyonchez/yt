@@ -49,10 +49,12 @@ interface VideoResult {
 async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
   return new Promise((resolve, reject) => {
     const ytdlpProcess = spawn('yt-dlp', [
-      `ytsearch50:${searchTerm}`,
+      `ytsearch10:${searchTerm}`,
       '--dump-json',
       '--no-warnings',
-      '--no-playlist'
+      '--no-playlist',
+      '--flat-playlist',
+      '--skip-download'
     ]);
 
     let stdout = '';
@@ -79,16 +81,22 @@ async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
         const results = lines.map(line => {
           try {
             const data = JSON.parse(line) as Record<string, unknown>;
+            
+            // Handle flat playlist format
+            const thumbnail = Array.isArray(data.thumbnails) && data.thumbnails.length > 0 
+              ? String(data.thumbnails[0].url || '') 
+              : '';
+            
             return {
               id: String(data.id || ''),
               title: String(data.title || 'Unknown Title'),
-              uploader: String(data.uploader || 'Unknown Channel'),
+              uploader: String(data.uploader || data.channel || 'Unknown Channel'),
               duration: Number(data.duration || 0),
               duration_string: String(data.duration_string || 'Unknown'),
               view_count: Number(data.view_count || 0),
               upload_date: String(data.upload_date || ''),
-              thumbnail: String(data.thumbnail || ''),
-              webpage_url: String(data.webpage_url || ''),
+              thumbnail: thumbnail,
+              webpage_url: String(data.webpage_url || data.url || ''),
               description: String(data.description || '')
             };
           } catch (parseError) {
@@ -113,10 +121,10 @@ async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
       }
     });
 
-    // Set timeout for the process (30 seconds)
+    // Set timeout for the process (60 seconds)
     setTimeout(() => {
       ytdlpProcess.kill();
       reject(new Error('Search timed out. Please try again.'));
-    }, 30000);
+    }, 60000);
   });
 }
