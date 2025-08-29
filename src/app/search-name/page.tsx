@@ -246,18 +246,12 @@ export default function SearchNamePage() {
                     {result.title}
                   </h3>
                   
-                  <p 
-                    className="text-xs mb-2 truncate"
-                    style={{ color: 'var(--muted-foreground)' }}
-                  >
-                    {result.uploader}
-                  </p>
-
                   <div 
-                    className="text-xs mb-3 flex-1"
+                    className="text-xs mb-3 flex-1 flex justify-between items-center"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
-                    <p>{formatViews(result.view_count)}</p>
+                    <p className="truncate pr-2">{result.uploader}</p>
+                    <p className="whitespace-nowrap">{formatViews(result.view_count)}</p>
                   </div>
 
                   <div className="mt-auto">
