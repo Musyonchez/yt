@@ -230,9 +230,11 @@ export default function SearchNamePage() {
                       </span>
                     </div>
                   )}
-                  <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-semibold bg-black bg-opacity-80 text-white">
-                    {result.duration_string}
-                  </div>
+                  {result.duration_string && (
+                    <div className="absolute bottom-2 right-2 px-2 py-1 rounded text-xs font-semibold bg-black bg-opacity-90 text-white shadow-lg">
+                      {result.duration_string}
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
