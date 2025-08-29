@@ -12,7 +12,7 @@ export default function Home() {
     >
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-950 opacity-50" />
+        <div className="absolute inset-0" style={{ backgroundColor: 'var(--background)' }} />
         
         <div className="relative container mx-auto px-6 py-20 lg:py-32">
           <div className="text-center max-w-4xl mx-auto">
