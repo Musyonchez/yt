@@ -254,11 +254,10 @@ export default function SearchPlaylistPage() {
                   </h3>
                   
                   <div 
-                    className="text-xs mb-3 flex justify-between items-center"
+                    className="text-xs mb-3"
                     style={{ color: 'var(--muted-foreground)' }}
                   >
-                    <p className="truncate pr-2">{result.uploader}</p>
-                    <p className="whitespace-nowrap">{formatDate(result.upload_date)}</p>
+                    <p className="truncate">{result.uploader}</p>
                   </div>
 
                   <div className="flex justify-between items-center">
