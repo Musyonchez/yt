@@ -275,11 +275,11 @@ export default function SearchNamePage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center space-x-2">
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:space-x-2 sm:gap-0">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-2 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                className="w-full sm:w-auto px-3 py-2 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',
@@ -324,7 +324,7 @@ export default function SearchNamePage() {
               <button
                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
+                className="w-full sm:w-auto px-3 py-2 rounded-lg border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105"
                 style={{
                   backgroundColor: 'var(--card)',
                   borderColor: 'var(--border)',
