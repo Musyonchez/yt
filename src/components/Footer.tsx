@@ -17,9 +17,9 @@ export default function Footer() {
     >
       {/* Main Footer Content */}
       <div className="container mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand Section */}
-          <div className="md:col-span-2">
+          <div className="sm:col-span-2 md:col-span-2">
             <Link href="/" className="inline-block mb-4">
               <Image
                 src={theme === 'light' ? '/logo-black.png' : '/logo-white.png'}
