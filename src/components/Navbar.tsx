@@ -142,8 +142,8 @@ export default function Navbar() {
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div 
-            className="lg:hidden mt-4 p-4 rounded-lg transition-all duration-300 transform"
-            style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+            className="lg:hidden mt-4 p-0 sm:p-4 rounded-lg transition-all duration-300 transform"
+            style={{ backgroundColor: 'var(--card)' }}
           >
             <div className="space-y-3">
               <Link 
