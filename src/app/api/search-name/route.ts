@@ -49,7 +49,7 @@ interface VideoResult {
 async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
   return new Promise((resolve, reject) => {
     const ytdlpProcess = spawn('yt-dlp', [
-      `ytsearch10:${searchTerm}`,
+      `ytsearch30:${searchTerm}`,
       '--dump-json',
       '--no-warnings',
       '--no-playlist',
