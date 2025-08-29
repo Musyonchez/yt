@@ -1,3 +1,5 @@
+'use client';
+
 import Link from "next/link";
 
 export default function Home() {
@@ -61,18 +63,10 @@ export default function Home() {
             </p>
             <Link 
               href="/search-name"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200"
+              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
               style={{ 
                 backgroundColor: 'var(--primary)', 
                 color: 'var(--primary-foreground)' 
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                e.currentTarget.style.color = 'var(--secondary-foreground)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary-foreground)';
               }}
             >
               Start Searching
@@ -116,18 +110,10 @@ export default function Home() {
             </p>
             <Link 
               href="/search-video"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200"
+              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
               style={{ 
                 backgroundColor: 'var(--primary)', 
                 color: 'var(--primary-foreground)' 
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                e.currentTarget.style.color = 'var(--secondary-foreground)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary-foreground)';
               }}
             >
               Search Video
@@ -171,18 +157,10 @@ export default function Home() {
             </p>
             <Link 
               href="/search-playlist"
-              className="inline-block px-4 py-2 rounded transition-colors duration-200"
+              className="inline-block px-4 py-2 rounded transition-colors duration-200 hover:opacity-80"
               style={{ 
                 backgroundColor: 'var(--primary)', 
                 color: 'var(--primary-foreground)' 
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--secondary)';
-                e.currentTarget.style.color = 'var(--secondary-foreground)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--primary)';
-                e.currentTarget.style.color = 'var(--primary-foreground)';
               }}
             >
               Search Playlist
