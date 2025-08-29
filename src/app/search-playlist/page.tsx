@@ -258,7 +258,7 @@ export default function SearchPlaylistPage() {
                     style={{ color: 'var(--muted-foreground)' }}
                   >
                     <p className="truncate pr-2">{result.uploader}</p>
-                    <p className="whitespace-nowrap">{formatViews(result.view_count)}</p>
+                    <p className="whitespace-nowrap">{formatDate(result.upload_date)}</p>
                   </div>
 
                   <div className="flex justify-between items-center">
