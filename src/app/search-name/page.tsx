@@ -132,8 +132,7 @@ export default function SearchNamePage() {
               style={{
                 backgroundColor: 'var(--card)',
                 borderColor: 'var(--border)',
-                color: 'var(--foreground)',
-                '--tw-ring-color': 'var(--ring)'
+                color: 'var(--foreground)'
               }}
               disabled={isLoading}
             />

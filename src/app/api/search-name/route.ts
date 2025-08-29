@@ -33,7 +33,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function searchYouTube(searchTerm: string): Promise<any[]> {
+interface VideoResult {
+  id: string;
+  title: string;
+  uploader: string;
+  duration: number;
+  duration_string: string;
+  view_count: number;
+  upload_date: string;
+  thumbnail: string;
+  webpage_url: string;
+  description: string;
+}
+
+async function searchYouTube(searchTerm: string): Promise<VideoResult[]> {
   return new Promise((resolve, reject) => {
     const ytdlpProcess = spawn('yt-dlp', [
       `ytsearch50:${searchTerm}`,
@@ -65,24 +78,24 @@ async function searchYouTube(searchTerm: string): Promise<any[]> {
         const lines = stdout.trim().split('\n').filter(line => line.trim());
         const results = lines.map(line => {
           try {
-            const data = JSON.parse(line);
+            const data = JSON.parse(line) as Record<string, unknown>;
             return {
-              id: data.id,
-              title: data.title || 'Unknown Title',
-              uploader: data.uploader || 'Unknown Channel',
-              duration: data.duration || 0,
-              duration_string: data.duration_string || 'Unknown',
-              view_count: data.view_count || 0,
-              upload_date: data.upload_date || '',
-              thumbnail: data.thumbnail || '',
-              webpage_url: data.webpage_url || '',
-              description: data.description || ''
+              id: String(data.id || ''),
+              title: String(data.title || 'Unknown Title'),
+              uploader: String(data.uploader || 'Unknown Channel'),
+              duration: Number(data.duration || 0),
+              duration_string: String(data.duration_string || 'Unknown'),
+              view_count: Number(data.view_count || 0),
+              upload_date: String(data.upload_date || ''),
+              thumbnail: String(data.thumbnail || ''),
+              webpage_url: String(data.webpage_url || ''),
+              description: String(data.description || '')
             };
           } catch (parseError) {
             console.error('Failed to parse JSON line:', line, parseError);
             return null;
           }
-        }).filter(Boolean); // Remove null entries
+        }).filter((result): result is VideoResult => result !== null); // Remove null entries
 
         resolve(results);
       } catch (parseError) {
