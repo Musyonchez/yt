@@ -254,19 +254,35 @@ export default function SearchNamePage() {
                     <p className="whitespace-nowrap">{formatViews(result.view_count)}</p>
                   </div>
 
-                  <div>
+                  <div className="flex justify-between items-center">
                     <a
                       href={result.webpage_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-xs font-medium transition-colors duration-200 hover:underline"
-                      style={{ color: 'var(--primary)' }}
+                      className="inline-flex items-center text-xs font-medium px-2 py-1 rounded transition-all duration-200 hover:scale-105"
+                      style={{ 
+                        backgroundColor: 'var(--primary)', 
+                        color: 'var(--primary-foreground)'
+                      }}
                     >
                       Watch on YouTube
                       <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                       </svg>
                     </a>
+                    
+                    <button
+                      className="inline-flex items-center text-xs font-medium px-2 py-1 rounded transition-all duration-200 hover:scale-105"
+                      style={{ 
+                        color: 'var(--muted-foreground)',
+                        border: '1px solid var(--border)'
+                      }}
+                    >
+                      Add to Library
+                      <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
