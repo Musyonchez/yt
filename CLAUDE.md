@@ -49,14 +49,24 @@ src/
 │   ├── globals.css          # Global styles with comprehensive theme system
 │   ├── search-name/
 │   │   └── page.tsx         # Video search by title/keywords
-│   ├── search-video/        # [Future] Direct video URL processing
-│   ├── search-playlist/     # [Future] Playlist URL processing
+│   ├── search-video/
+│   │   └── page.tsx         # Direct video URL processing
+│   ├── search-playlist/
+│   │   └── page.tsx         # Playlist URL processing
+│   ├── not-found.tsx        # Custom 404 page with MP3Ninja branding
 │   └── api/
-│       └── search-name/
-│           └── route.ts     # API endpoint for yt-dlp video search
+│       ├── search-name/
+│       │   └── route.ts     # API endpoint for yt-dlp video search
+│       ├── search-video/
+│       │   └── route.ts     # API endpoint for single video processing
+│       └── search-playlist/
+│           └── route.ts     # API endpoint for playlist processing
 ├── components/
 │   ├── Navbar.tsx           # Professional navigation with theme toggle
-│   └── Footer.tsx           # Comprehensive footer with links and social
+│   ├── Footer.tsx           # Comprehensive footer with links and social
+│   └── HostingInfoModal.tsx # GitHub hosting instructions modal
+├── utils/
+│   └── localhost.ts         # Localhost detection utility
 ├── hooks/
 │   └── useTheme.ts          # Theme management with localStorage persistence
 public/
@@ -82,15 +92,22 @@ docs/
 - **Display**: Thumbnails, titles, channels, duration, views, upload dates
 - **UI**: Loading states, error handling, responsive design
 
-#### 2. Search by Video URL (`/search-video`) [Planned]
-- **Input**: Direct YouTube video URL
-- **Process**: Video metadata extraction and download options
-- **Results**: Single video detailed information
+#### 2. Search by Video URL (`/search-video`)
+- **Input**: Direct YouTube video URL with validation
+- **Process**: Single video metadata extraction via yt-dlp
+- **Results**: Detailed video information with thumbnail, metadata, description
+- **UI**: Large card layout optimized for single video display
 
-#### 3. Search by Playlist URL (`/search-playlist`) [Planned]
-- **Input**: YouTube playlist URL
-- **Process**: Extract all videos from playlist
-- **Results**: List of all playlist videos with batch operations
+#### 3. Search by Playlist URL (`/search-playlist`)
+- **Input**: YouTube playlist URL with validation
+- **Process**: Extract all videos from playlist using yt-dlp
+- **Results**: Grid of playlist videos with pagination (10 per page)
+- **Display**: Simplified cards showing title, channel, duration (no view counts due to flat-playlist format)
+
+#### 4. Custom 404 Page (`/not-found`)
+- **Design**: Clean, viewport-optimized layout without logo
+- **Features**: Navigation to all search pages, "Go Home" CTA
+- **Branding**: Music-themed message maintaining MP3Ninja personality
 
 ### API Architecture
 
@@ -98,11 +115,29 @@ docs/
 - **Purpose**: YouTube video search via yt-dlp
 - **Input**: `{ searchTerm: string }`
 - **Process**: 
-  - Spawns yt-dlp child process with 30s timeout
+  - Uses `ytsearch50:term` with `--flat-playlist` for performance
+  - Spawns yt-dlp child process with 60s timeout
   - Parses JSON output line by line
-  - Extracts structured metadata
-- **Output**: Array of VideoResult objects
+- **Output**: Array of VideoResult objects (50 results)
 - **Error Handling**: Process failures, parsing errors, timeouts
+
+#### `/api/search-video` (POST)
+- **Purpose**: Single video metadata extraction
+- **Input**: `{ videoUrl: string }` with YouTube URL validation
+- **Process**: 
+  - Direct video processing without flat-playlist
+  - 30s timeout for single video processing
+- **Output**: Single VideoResult object with full metadata
+- **Features**: Complete video information including views and description
+
+#### `/api/search-playlist` (POST)
+- **Purpose**: Playlist video extraction
+- **Input**: `{ playlistUrl: string }` with playlist URL validation
+- **Process**: 
+  - Uses `--flat-playlist` for performance optimization
+  - 90s timeout for large playlist processing
+- **Output**: Array of VideoResult objects from playlist
+- **Limitations**: View counts not available in flat-playlist format
 
 ```typescript
 interface VideoResult {
@@ -177,15 +212,43 @@ Comprehensive theme system with semantic color tokens:
 - **Multiple CTAs** for conversion optimization
 - **Professional spacing** and visual hierarchy
 
+#### HostingInfoModal Component
+- **Purpose**: Educates users about localhost-only functionality
+- **Trigger**: Automatically shown when search is attempted on non-localhost
+- **Content**: Step-by-step GitHub setup instructions with code blocks
+- **Features**: GitHub repository link, comprehensive setup guide, professional design
+- **Responsive**: Works on all screen sizes with backdrop blur and proper spacing
+- **Theme Integration**: Fully themed with CSS variables for light/dark modes
+
 ### Search Page Architecture
 
 #### Search-Name Page
-- **Search Form**: Input with validation and loading states
-- **Results Display**: Grid layout with video metadata
-- **Pagination**: Client-side pagination (10 results per page)
-- **Error Handling**: User-friendly error messages
+- **Search Form**: Text input with validation and loading states
+- **Results Display**: Responsive grid layout (1-4 columns based on screen size)
+- **Video Cards**: Thumbnail, title, channel, views, duration overlay
+- **Pagination**: Client-side pagination (10 results per page) with numbered buttons
+- **Dual Actions**: "Watch on YouTube" and "Add to Library" buttons
+- **Error Handling**: User-friendly error messages and empty states
 - **Loading States**: Spinners during API calls
-- **Responsive Design**: Works on all screen sizes
+- **Responsive Design**: Mobile-first with breakpoints at 640px, 768px, 1024px
+
+#### Search-Video Page
+- **URL Input**: YouTube URL validation with regex pattern matching
+- **Single Video Display**: Large card layout optimized for detailed view
+- **Metadata**: Channel, views, upload date, duration prominently displayed
+- **Description**: Expandable description section with truncation
+- **Action Buttons**: Prominent "Watch on YouTube" and "Add to Library" CTAs
+- **Error Handling**: URL validation errors and video processing failures
+- **Responsive Layout**: Grid layout that adapts to screen size
+
+#### Search-Playlist Page
+- **Playlist URL Input**: YouTube playlist URL validation
+- **Grid Display**: Same responsive grid as search-name (1-4 columns)
+- **Simplified Cards**: Title, channel, duration (no view counts)
+- **Pagination**: Client-side pagination for large playlists
+- **Batch Processing**: Handles playlists with many videos efficiently
+- **Error Handling**: Playlist URL validation and processing errors
+- **Performance**: Optimized with flat-playlist format for speed
 
 ### Font Configuration
 
@@ -194,6 +257,15 @@ Uses Geist font family from Google Fonts:
 - `--font-geist-mono` for monospace text
 - Loaded in `layout.tsx` and available as CSS variables
 - Applied to body element with fallbacks
+
+### Utility Functions
+
+#### Localhost Detection (`src/utils/localhost.ts`)
+- **Purpose**: Determines if application is running in local development environment
+- **Detection Methods**: Checks for localhost, 127.0.0.1, local network IPs, .local domains
+- **Integration**: Used across all search pages to prevent API calls on production
+- **Server-Side Safe**: Returns false during server-side rendering
+- **Network Support**: Detects local network addresses (192.168.x.x, 10.x.x.x, 172.16.x.x)
 
 ### Development Guidelines
 
@@ -236,6 +308,13 @@ Uses Geist font family from Google Fonts:
 - **Node.js 18+** runtime environment
 - **Environment variables** for any configuration
 - **Process permissions** for spawning child processes
+- **Localhost Detection**: Application checks for localhost and shows hosting modal when not local
+
+#### Hosting Limitations
+- **Serverless Incompatibility**: yt-dlp cannot run on Vercel, Netlify, or similar platforms
+- **System Dependencies**: Requires Python and system-level binary execution
+- **Local Development**: Full functionality only available when running locally
+- **Production Guidance**: Hosting modal provides GitHub setup instructions
 
 ### Documentation References
 
@@ -247,8 +326,10 @@ Uses Geist font family from Google Fonts:
 
 #### Important Considerations
 - **yt-dlp Dependency**: Critical external dependency for core functionality
-- **Process Timeouts**: 30-second timeout for search operations
-- **Error Recovery**: Graceful handling of yt-dlp failures
+- **Process Timeouts**: Variable timeouts (30s for single video, 60s for search, 90s for playlists)
+- **Error Recovery**: Graceful handling of yt-dlp failures with user-friendly messages
+- **Localhost Detection**: Automatic detection prevents API calls on production
+- **Hosting Modal**: Comprehensive GitHub setup instructions for local development
 - **Rate Limiting**: Consider implementing for production use
 - **Caching**: Consider caching search results for better performance
 
@@ -268,15 +349,25 @@ Uses Geist font family from Google Fonts:
 - ✅ **Mobile Navigation**: Theme toggle accessibility and responsive hamburger menu
 - ✅ **Card-Based Interface**: Modern YouTube-like video cards with optimized visual hierarchy
 - ✅ **Dual Action Buttons**: Watch on YouTube and Add to Library with strategic positioning
-- 🚧 **Search by Video URL**: Planned for next iteration
-- 🚧 **Search by Playlist URL**: Planned for future development
-- 🚧 **Toast Notifications**: Planned for better UX
-- 🚧 **Download Functionality**: Future enhancement
+- ✅ **Search by Video URL**: Complete with single video processing and detailed display
+- ✅ **Search by Playlist URL**: Complete with playlist processing and grid display
+- ✅ **Custom 404 Page**: Clean, viewport-optimized design with navigation options
+- ✅ **Localhost Detection**: Automatic detection with hosting modal for production
+- ✅ **GitHub Integration**: Comprehensive setup instructions with repository link
+- ✅ **API Routes**: All three search endpoints with optimized yt-dlp integration
+- ✅ **URL Validation**: Regex-based validation for video and playlist URLs
+- ✅ **Error Handling**: User-friendly error messages across all search types
+- ✅ **Build Optimization**: All pages pass Next.js build with no errors
+- 🚧 **Toast Notifications**: Planned for better UX feedback
+- 🚧 **Download Functionality**: Future enhancement for actual video downloads
 
 #### Future Enhancements
 - Toast notification system for better user feedback
 - Search result caching for improved performance
-- Download queue management
-- User preferences and history
+- Download queue management with progress tracking
+- User preferences and search history
 - Advanced search filters and sorting options
+- Video download functionality (audio/video formats)
+- Batch operations for playlist videos
+- Integration with external storage services
 
